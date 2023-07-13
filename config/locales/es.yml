@@ -1,0 +1,6 @@
+es:
+  label_group_parent_child: Padre y hijo
+  child_status_id: Estado del hijo
+  child_tracker_id: Tracker del hijo
+  parent_status_id: Estado del padre
+  parent_tracker_id: Tracker del padre
