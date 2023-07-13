@@ -2,5 +2,6 @@ de:
   label_group_parent_child: Eltern und Kind
   child_status_id: Status des Kindes
   child_tracker_id: Tracker des Kindes
+  child_tracker_status_id: Tracker un Status des Kindes
   parent_status_id: Status des Elternteils
   parent_tracker_id: Tracker des Elternteils

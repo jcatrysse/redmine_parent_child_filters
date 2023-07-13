@@ -2,5 +2,6 @@ zh:
   label_group_parent_child: 父母和子女
   child_status_id: 子状态
   child_tracker_id: 子追踪器
+  child_tracker_status_id: 子追踪器和状态
   parent_status_id: 父母状态
   parent_tracker_id: 父母追踪器

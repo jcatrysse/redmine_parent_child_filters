@@ -2,7 +2,7 @@ Redmine::Plugin.register :redmine_parent_child_filters do
   name 'Parent Child Filters Plugin'
   author 'Jan Catrysse'
   description 'Search issues by parent and child tracker and status'
-  version '0.0.1'
+  version '0.0.2'
   url 'https://github.com/jcatrysse/redmine_parent_child_filters'
   author_url 'https://github.com/jcatrysse'
 

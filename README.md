@@ -6,11 +6,10 @@ Link to Redmine plugin page: https://www.redmine.org/plugins/redmine_parent_chil
 
 ## Compatibility
 
-* Version 0.0.1 >= Redmine 4 (including Remdine 5)
+* Version 0.0.1 >= Redmine 4 (including Redmine 5)
 
 ## Features
 
-* initial commit
 * filter in parent_tracker
 * filter in parent_status
 * filter in child_tracker

@@ -47,26 +47,49 @@ module RedmineParentChildFilters
         end
 
         def sql_for_child_tracker_id_field(field, operator, value)
-          if operator == '='
-            "(#{Issue.table_name}.id IN (SELECT parent_id FROM #{Issue.table_name} WHERE tracker_id IN (#{value.join(',')})))"
-          elsif operator == '!'
-            "(#{Issue.table_name}.id NOT IN (SELECT parent_id FROM #{Issue.table_name} WHERE tracker_id IN (#{value.join(',')})) OR #{Issue.table_name}.id NOT IN (SELECT parent_id FROM #{Issue.table_name}))"
+          tracker_filter = ''
+          case operator
+          when '=', '!'
+            status_condition = ''
+
+            if filters && filters.key?('child_status_id')
+              status_filter = filters['child_status_id']
+              status_operator = status_filter[:operator]
+              status_values = status_filter[:values]
+
+              case status_operator
+              when '=', '!'
+                status_condition = "AND status_id #{status_operator == '=' ? 'IN' : 'NOT IN'} (#{status_values.join(',')})"
+              when 'o'
+                status_condition = "AND status_id IN (SELECT id FROM #{IssueStatus.table_name} WHERE is_closed=#{self.class.connection.quoted_false})"
+              when 'c'
+                status_condition = "AND status_id IN (SELECT id FROM #{IssueStatus.table_name} WHERE is_closed=#{self.class.connection.quoted_true})"
+              when '*'
+                status_condition = ''
+              end
+            end
+
+            tracker_filter = "(#{Issue.table_name}.id IN (SELECT parent_id FROM #{Issue.table_name} WHERE tracker_id #{operator == '=' ? 'IN' : 'NOT IN'} (#{value.join(',')}) #{status_condition}))"
           end
+          tracker_filter
         end
 
+
         def sql_for_child_status_id_field(field, operator, value)
+          status_filter = ''
           case operator
           when '='
-            "(#{Issue.table_name}.id IN (SELECT parent_id FROM #{Issue.table_name} WHERE status_id IN (#{value.join(',')})))"
+            status_filter = "(#{Issue.table_name}.id IN (SELECT parent_id FROM #{Issue.table_name} WHERE status_id IN (#{value.join(',')})))"
           when '!'
-            "(#{Issue.table_name}.id NOT IN (SELECT parent_id FROM #{Issue.table_name} WHERE status_id IN (#{value.join(',')})) OR #{Issue.table_name}.id NOT IN (SELECT parent_id FROM #{Issue.table_name}))"
-          when 'o'  # open issues
-            "(#{Issue.table_name}.id IN (SELECT parent_id FROM #{Issue.table_name} WHERE status_id IN (SELECT id FROM #{IssueStatus.table_name} WHERE is_closed = #{ActiveRecord::Base.connection.quoted_false})))"
-          when 'c'  # closed issues
-            "(#{Issue.table_name}.id IN (SELECT parent_id FROM #{Issue.table_name} WHERE status_id IN (SELECT id FROM #{IssueStatus.table_name} WHERE is_closed = #{ActiveRecord::Base.connection.quoted_true})))"
-          when '*'  # all issues
-            nil  # return nil to include all issues regardless of status
-          end
+            status_filter = "(#{Issue.table_name}.id NOT IN (SELECT parent_id FROM #{Issue.table_name} WHERE status_id IN (#{value.join(',')})) OR #{Issue.table_name}.parent_id IS NULL)"
+          when 'o'
+            status_filter = "(#{Issue.table_name}.id IN (SELECT parent_id FROM #{Issue.table_name} WHERE status_id IN (SELECT id FROM #{IssueStatus.table_name} WHERE is_closed=#{self.class.connection.quoted_false})))"
+          when 'c'
+            status_filter = "(#{Issue.table_name}.id IN (SELECT parent_id FROM #{Issue.table_name} WHERE status_id IN (SELECT id FROM #{IssueStatus.table_name} WHERE is_closed=#{self.class.connection.quoted_true})))"
+          when '*'
+            status_filter = "(#{Issue.table_name}.id IN (SELECT parent_id FROM #{Issue.table_name}))"
+          end unless filters && filters.key?('child_tracker_id')
+          status_filter
         end
 
       end

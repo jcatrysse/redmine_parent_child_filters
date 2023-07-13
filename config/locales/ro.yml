@@ -2,5 +2,6 @@ ro:
   label_group_parent_child: Părinte și copil
   child_status_id: Stare copil
   child_tracker_id: Tracker copil
+  child_tracker_status_id: Tracker și stare copil
   parent_status_id: Stare părinte
   parent_tracker_id: Tracker părinte

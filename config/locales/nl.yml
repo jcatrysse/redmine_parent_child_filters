@@ -2,5 +2,6 @@ nl:
   label_group_parent_child: Parent en child
   child_status_id: Child status
   child_tracker_id: Child tracker
+  child_tracker_status_id: Child tracker and status
   parent_status_id: Parent status
   parent_tracker_id: Parent tracker
