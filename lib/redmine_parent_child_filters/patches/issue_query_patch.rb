@@ -3,8 +3,11 @@ module RedmineParentChildFilters
   module Patches
     module IssueQueryPatch
       module InstanceMethods
-        def initialize_available_filters
-          super
+        def initialize_available_filters_with_pcf
+          initialize_available_filters_without_pcf
+          add_available_filter(
+            "rootissue_id",
+            :type => :tree, :label => :label_rootissue)
           add_available_filter(
             "parent_tracker_id",
             type: :list, values: trackers.collect { |s| [s.name, s.id.to_s] }, label: :parent_tracker_id
@@ -21,6 +24,25 @@ module RedmineParentChildFilters
             "child_status_id",
             type: :list_status, values: lambda { issue_statuses_values }, label: :child_status_id
           )
+        end
+
+        def sql_for_rootissue_id_field(field, operator, value)
+          case operator
+          when "="
+            # accepts a comma separated list of ids
+            ids = value.first.to_s.scan(/\d+/)
+            condition = ids.empty? ? "1=0" : "#{Issue.table_name}.root_id IN (#{ids.join(",")})"
+          when "~"
+            # accepts a comma separated list of ids
+            ids = value.first.to_s.scan(/\d+/)
+            condition = ids.empty? ? "1=0" : "#{Issue.table_name}.root_id IN (#{ids.join(",")})"
+          when "!*"
+            "#{Issue.table_name}.root_id IS NULL"
+          when "*"
+            "#{Issue.table_name}.root_id IS NOT NULL"
+          else
+            # type code here
+          end
         end
 
         def sql_for_parent_tracker_id_field(field, operator, value)
@@ -74,7 +96,6 @@ module RedmineParentChildFilters
           tracker_filter
         end
 
-
         def sql_for_child_status_id_field(field, operator, value)
           status_filter = ''
           case operator
@@ -97,4 +118,8 @@ module RedmineParentChildFilters
   end
 end
 
-IssueQuery.prepend(RedmineParentChildFilters::Patches::IssueQueryPatch::InstanceMethods)
+IssueQuery.include(RedmineParentChildFilters::Patches::IssueQueryPatch::InstanceMethods)
+IssueQuery.class_eval do
+  alias_method :initialize_available_filters_without_pcf, :initialize_available_filters
+  alias_method :initialize_available_filters, :initialize_available_filters_with_pcf
+end
