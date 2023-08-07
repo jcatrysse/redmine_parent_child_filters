@@ -6,27 +6,35 @@ module RedmineParentChildFilters
         def initialize_available_filters_with_pcf
           initialize_available_filters_without_pcf
           add_available_filter(
-            "rootissue_id",
-            :type => :tree, :label => :label_rootissue)
+            "root_id",
+            :type => :tree, :label => :label_filter_root)
+          add_available_filter(
+            "root_tracker_id",
+            type: :list, values: trackers.collect { |s| [s.name, s.id.to_s] }, label: :label_filter_root_tracker_id
+          )
+          add_available_filter(
+            "root_status_id",
+            type: :list_status, values: lambda { issue_statuses_values }, label: :label_filter_root_status_id
+          )
           add_available_filter(
             "parent_tracker_id",
-            type: :list, values: trackers.collect { |s| [s.name, s.id.to_s] }, label: :parent_tracker_id
+            type: :list, values: trackers.collect { |s| [s.name, s.id.to_s] }, label: :label_filter_parent_tracker_id
           )
           add_available_filter(
             "parent_status_id",
-            type: :list_status, values: lambda { issue_statuses_values }, label: :parent_status_id
+            type: :list_status, values: lambda { issue_statuses_values }, label: :label_filter_parent_status_id
           )
           add_available_filter(
             "child_tracker_id",
-            type: :list, values: trackers.collect { |s| [s.name, s.id.to_s] }, label: :child_tracker_id
+            type: :list, values: trackers.collect { |s| [s.name, s.id.to_s] }, label: :label_filter_child_tracker_id
           )
           add_available_filter(
             "child_status_id",
-            type: :list_status, values: lambda { issue_statuses_values }, label: :child_status_id
+            type: :list_status, values: lambda { issue_statuses_values }, label: :label_filter_child_status_id
           )
         end
 
-        def sql_for_rootissue_id_field(field, operator, value)
+        def sql_for_root_id_field(field, operator, value)
           case operator
           when "="
             # accepts a comma separated list of ids
@@ -42,6 +50,33 @@ module RedmineParentChildFilters
             "#{Issue.table_name}.root_id IS NOT NULL"
           else
             # type code here
+          end
+        end
+
+        def sql_for_root_tracker_id_field(field, operator, value)
+          if operator == '='
+            # Include issues which are their own root and match the tracker condition
+            # OR include issues where their root matches the tracker condition
+            "((#{Issue.table_name}.id = #{Issue.table_name}.root_id AND #{Issue.table_name}.tracker_id IN (#{value.join(',')})) OR (#{Issue.table_name}.root_id IN (SELECT id FROM #{Issue.table_name} WHERE tracker_id IN (#{value.join(',')}))))"
+          elsif operator == '!'
+            # Exclude issues which are their own root and match the tracker condition
+            # OR exclude issues where their root matches the tracker condition
+            "NOT ((#{Issue.table_name}.id = #{Issue.table_name}.root_id AND #{Issue.table_name}.tracker_id IN (#{value.join(',')})) OR (#{Issue.table_name}.root_id IN (SELECT id FROM #{Issue.table_name} WHERE tracker_id IN (#{value.join(',')}))))"
+          end
+        end
+
+        def sql_for_root_status_id_field(field, operator, value)
+          case operator
+          when '='
+            "((#{Issue.table_name}.id = #{Issue.table_name}.root_id AND #{Issue.table_name}.status_id IN (#{value.join(',')})) OR (#{Issue.table_name}.root_id IN (SELECT id FROM #{Issue.table_name} WHERE status_id IN (#{value.join(',')}))))"
+          when '!'
+            "NOT ((#{Issue.table_name}.id = #{Issue.table_name}.root_id AND #{Issue.table_name}.status_id IN (#{value.join(',')})) OR (#{Issue.table_name}.root_id IN (SELECT id FROM #{Issue.table_name} WHERE status_id IN (#{value.join(',')}))))"
+          when 'o'
+            "((#{Issue.table_name}.id = #{Issue.table_name}.root_id AND #{Issue.table_name}.status_id IN (SELECT id FROM #{IssueStatus.table_name} WHERE is_closed = #{ActiveRecord::Base.connection.quoted_false})) OR (#{Issue.table_name}.root_id IN (SELECT id FROM #{Issue.table_name} WHERE status_id IN (SELECT id FROM #{IssueStatus.table_name} WHERE is_closed = #{ActiveRecord::Base.connection.quoted_false}))))"
+          when 'c'
+            "((#{Issue.table_name}.id = #{Issue.table_name}.root_id AND #{Issue.table_name}.status_id IN (SELECT id FROM #{IssueStatus.table_name} WHERE is_closed = #{ActiveRecord::Base.connection.quoted_true})) OR  (#{Issue.table_name}.root_id IN (SELECT id FROM #{Issue.table_name} WHERE status_id IN (SELECT id FROM #{IssueStatus.table_name} WHERE is_closed = #{ActiveRecord::Base.connection.quoted_true}))))"
+          when '*'
+            "(#{Issue.table_name}.id != #{Issue.table_name}.root_id)"
           end
         end
 

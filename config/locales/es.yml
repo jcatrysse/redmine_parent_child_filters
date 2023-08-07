@@ -1,7 +1,10 @@
 es:
-  label_group_parent_child: Padre y hijo
-  child_status_id: Estado del hijo
-  child_tracker_id: Tracker del hijo
-  child_tracker_status_id: Tracker y estado del hijo
-  parent_status_id: Estado del padre
-  parent_tracker_id: Tracker del padre
+  label_filter_group_parent_child: Padre e hijo
+  label_filter_child_status_id: Estado del hijo
+  label_filter_child_tracker_id: Seguimiento del hijo
+  label_filter_child_tracker_status_id: Seguimiento y estado del hijo
+  label_filter_parent_status_id: Estado del padre
+  label_filter_parent_tracker_id: Seguimiento del padre
+  label_filter_root: Ticket raíz
+  label_filter_root_status_id: Estado del ticket raíz
+  label_filter_root_tracker_id: Seguimiento del ticket raíz

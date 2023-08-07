@@ -7,7 +7,9 @@ Link to Redmine plugin page: https://www.redmine.org/plugins/redmine_parent_chil
 * Version 0.0.1 >= Redmine 4 (including Redmine 5)
 
 ## Features
-* Filter on `root_issue`
+* Filter on `root`
+* Filter on `root_tracker`
+* Filter on `root_status`
 * Filter on `parent_tracker`
 * Filter on `parent_status`
 * Filter on `child_tracker`

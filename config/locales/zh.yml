@@ -1,7 +1,10 @@
 zh:
-  label_group_parent_child: 父母和子女
-  child_status_id: 子状态
-  child_tracker_id: 子追踪器
-  child_tracker_status_id: 子追踪器和状态
-  parent_status_id: 父母状态
-  parent_tracker_id: 父母追踪器
+  label_filter_group_parent_child: 父与子
+  label_filter_child_status_id: 子状态
+  label_filter_child_tracker_id: 子票据追踪
+  label_filter_child_tracker_status_id: 子票据追踪及状态
+  label_filter_parent_status_id: 父状态
+  label_filter_parent_tracker_id: 父票据追踪
+  label_filter_root: 根票据
+  label_filter_root_status_id: 根票据状态
+  label_filter_root_tracker_id: 根票据追踪

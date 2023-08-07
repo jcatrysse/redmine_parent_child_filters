@@ -1,7 +1,10 @@
 nl:
-  label_group_parent_child: Parent en child
-  child_status_id: Child status
-  child_tracker_id: Child tracker
-  child_tracker_status_id: Child tracker and status
-  parent_status_id: Parent status
-  parent_tracker_id: Parent tracker
+  label_filter_group_parent_child: Parent en child
+  label_filter_child_status_id: Child status
+  label_filter_child_tracker_id: Child tracker
+  label_filter_child_tracker_status_id: Child tracker and status
+  label_filter_parent_status_id: Parent status
+  label_filter_parent_tracker_id: Parent tracker
+  label_filter_root: Root
+  label_filter_root_status_id: Root status
+  label_filter_root_tracker_id: Root tracker

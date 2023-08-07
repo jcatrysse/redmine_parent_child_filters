@@ -1,7 +1,10 @@
 ro:
-  label_group_parent_child: Părinte și copil
-  child_status_id: Stare copil
-  child_tracker_id: Tracker copil
-  child_tracker_status_id: Tracker și stare copil
-  parent_status_id: Stare părinte
-  parent_tracker_id: Tracker părinte
+  label_filter_group_parent_child: Părinte și copil
+  label_filter_child_status_id: Starea copilului
+  label_filter_child_tracker_id: Urmărirea copilului
+  label_filter_child_tracker_status_id: Urmărirea și starea copilului
+  label_filter_parent_status_id: Starea părintelui
+  label_filter_parent_tracker_id: Urmărirea părintelui
+  label_filter_root: Tichet principal
+  label_filter_root_status_id: Starea tichetului principal
+  label_filter_root_tracker_id: Urmărirea tichetului principal

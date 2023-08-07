@@ -1,7 +1,10 @@
 fr:
-  label_group_parent_child: Parent et enfant
-  child_status_id: Statut de l'enfant
-  child_tracker_id: Tracker de l'enfant
-  child_tracker_status_id: Tracker et statut de l'enfant
-  parent_status_id: Statut du parent
-  parent_tracker_id: Tracker du parent
+  label_filter_group_parent_child: Parent et enfant
+  label_filter_child_status_id: Statut de l'enfant
+  label_filter_child_tracker_id: Suivi de l'enfant
+  label_filter_child_tracker_status_id: Tracker et statut de l'enfant
+  label_filter_parent_status_id: Statut du parent
+  label_filter_parent_tracker_id: Tracker du parent
+  label_filter_root: Ticket racine
+  label_filter_root_status_id: Statut du ticket racine
+  label_filter_root_tracker_id: Tracker du ticket racine

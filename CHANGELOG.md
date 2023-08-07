@@ -1,6 +1,8 @@
 # CHANGELOG
 ### 0.0.3
-* Filter on `root_issue`
+* Filter on `root`
+* Filter on `root_tracker`
+* Filter on `root_status`
 * Operator `not equal to` on `start_date` and `end_date`
 * Resolved issue: `SystemStackError (stack level too deep)`  
   Converted `initialize_available_filters` to use `alias_method` 
