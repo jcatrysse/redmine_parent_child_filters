@@ -11,3 +11,4 @@ end
 
 require File.dirname(__FILE__) + '/lib/redmine_parent_child_filters/patches/issue_query_patch'
 require File.dirname(__FILE__) + '/lib/redmine_parent_child_filters/patches/queries_helper_patch'
+require File.dirname(__FILE__) + '/lib/redmine_parent_child_filters/patches/query_include'

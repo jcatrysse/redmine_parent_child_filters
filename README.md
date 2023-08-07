@@ -7,11 +7,12 @@ Link to Redmine plugin page: https://www.redmine.org/plugins/redmine_parent_chil
 * Version 0.0.1 >= Redmine 4 (including Redmine 5)
 
 ## Features
-* filter on rootissue
-* filter on parent_tracker
-* filter on parent_status
-* filter on child_tracker
-* filter on child_status
+* Filter on `root_issue`
+* Filter on `parent_tracker`
+* Filter on `parent_status`
+* Filter on `child_tracker`
+* Filter on `child_status`
+* Operator `not equal to` on `start_date` and `end_date`
 
 ## Install
 Type below commands:

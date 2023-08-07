@@ -1,15 +1,16 @@
 # CHANGELOG
 ### 0.0.3
-* filter on root_issue
+* Filter on `root_issue`
+* Operator `not equal to` on `start_date` and `end_date`
 * Resolved issue: `SystemStackError (stack level too deep)`  
   Converted `initialize_available_filters` to use `alias_method` 
 
 ### 0.0.2
-* child filters, when combined, are now considering the same child
+* Filters `child_tracker` and `child_status`, when combined, are now considering the same child
 
 ### 0.0.1
-* initial commit
-* filter on parent_tracker
-* filter on parent_status
-* filter on child_tracker
-* filter on child_status
+* Initial commit
+* Filter on `parent_tracker`
+* Filter on `parent_status`
+* Filter on `child_tracker`
+* Filter on `child_status`
