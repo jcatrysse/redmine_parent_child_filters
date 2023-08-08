@@ -2,9 +2,19 @@ nl:
   label_filter_group_parent_child: Parent en child
   label_filter_child_status_id: Child status
   label_filter_child_tracker_id: Child tracker
-  label_filter_child_tracker_status_id: Child tracker and status
   label_filter_parent_status_id: Parent status
   label_filter_parent_tracker_id: Parent tracker
+  label_filter_a_parent_status_id: Parent (alle) status
+  label_filter_a_parent_tracker_id: Parent (alle) tracker
   label_filter_root: Root
   label_filter_root_status_id: Root status
   label_filter_root_tracker_id: Root tracker
+  label_enable_root_id_filter: Enable Root Filter
+  label_enable_root_tracker_id_filter: Root Tracker Filter inschakelen
+  label_enable_root_status_id_filter: Root Status Filter inschakelen
+  label_enable_parent_tracker_id_filter: Parent Tracker Filter inschakelen
+  label_enable_parent_status_id_filter: Parent Status Filter inschakelen
+  label_enable_a_parent_tracker_id_filter: Parent (any) Tracker Filter inschakelen
+  label_enable_a_parent_status_id_filter: Parent (any) Status Filter inschakelen
+  label_enable_child_tracker_id_filter: Child Tracker Filter inschakelen
+  label_enable_child_status_id_filter: Child Status Filter inschakelen

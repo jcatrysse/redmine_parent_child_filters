@@ -2,9 +2,19 @@ ro:
   label_filter_group_parent_child: Părinte și copil
   label_filter_child_status_id: Starea copilului
   label_filter_child_tracker_id: Urmărirea copilului
-  label_filter_child_tracker_status_id: Urmărirea și starea copilului
   label_filter_parent_status_id: Starea părintelui
   label_filter_parent_tracker_id: Urmărirea părintelui
+  label_filter_a_parent_status_id: Starea părintelui (toţi)
+  label_filter_a_parent_tracker_id: Urmărirea părintelui (toţi)
   label_filter_root: Tichet principal
   label_filter_root_status_id: Starea tichetului principal
   label_filter_root_tracker_id: Urmărirea tichetului principal
+  label_enable_root_id_filter: Activați filtrul rădăcină
+  label_enable_root_tracker_id_filter: Activați filtrul Root Tracker
+  label_enable_root_status_id_filter: Activați filtrul de stare rădăcină
+  label_enable_parent_tracker_id_filter: Activați filtrul de urmărire parentală
+  label_enable_parent_status_id_filter: Activați filtrul de stare parentală
+  label_enable_a_parent_tracker_id_filter: Activați filtrul de urmărire părinte (orice).
+  label_enable_a_parent_status_id_filter: Activați filtrul de stare Parent (orice).
+  label_enable_child_tracker_id_filter: Activați filtrul de urmărire a copiilor
+  label_enable_child_status_id_filter: Activați filtrul pentru starea copilului

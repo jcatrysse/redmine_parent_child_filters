@@ -2,9 +2,19 @@ en:
   label_filter_group_parent_child: Parent and child
   label_filter_child_status_id: Child status
   label_filter_child_tracker_id: Child tracker
-  label_filter_child_tracker_status_id: Child tracker and status
   label_filter_parent_status_id: Parent status
   label_filter_parent_tracker_id: Parent tracker
+  label_filter_a_parent_status_id: Parent (any) status
+  label_filter_a_parent_tracker_id: Parent (any) tracker
   label_filter_root: Root
   label_filter_root_status_id: Root status
   label_filter_root_tracker_id: Root tracker
+  label_enable_root_id_filter: Enable Root Filter
+  label_enable_root_tracker_id_filter: Enable Root Tracker Filter
+  label_enable_root_status_id_filter: Enable Root Status Filter
+  label_enable_parent_tracker_id_filter: Enable Parent Tracker Filter
+  label_enable_parent_status_id_filter: Enable Parent Status Filter
+  label_enable_a_parent_tracker_id_filter: Enable Parent (any) Tracker Filter
+  label_enable_a_parent_status_id_filter: Enable Parent (any) Status Filter
+  label_enable_child_tracker_id_filter: Enable Child Tracker Filter
+  label_enable_child_status_id_filter: Enable Child Status Filter

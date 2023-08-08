@@ -2,9 +2,19 @@ de:
   label_filter_group_parent_child: Eltern und Kind
   label_filter_child_status_id: Status des Kindes
   label_filter_child_tracker_id: Verfolgung des Kindes
-  label_filter_child_tracker_status_id: Verfolgung und Status des Kindes
   label_filter_parent_status_id: Status der Eltern
   label_filter_parent_tracker_id: Verfolgung der Eltern
+  label_filter_a_parent_status_id: Status der Eltern (jeder)
+  label_filter_a_parent_tracker_id: Verfolgung der Eltern (jeder)
   label_filter_root: Hauptticket
   label_filter_root_status_id: Status des Haupttickets
   label_filter_root_tracker_id: Verfolgung des Haupttickets
+  label_enable_root_id_filter: Haupttickets Filter aktivieren
+  label_enable_root_tracker_id_filter: Haupttickets Trackerfilter aktivieren
+  label_enable_root_status_id_filter: Haupttickets Statusfilter aktivieren
+  label_enable_parent_tracker_id_filter: Eltern Trackerfilter aktivieren
+  label_enable_parent_status_id_filter: Eltern Statusfilter aktivieren
+  label_enable_a_parent_tracker_id_filter: Eltern Trackerfilter aktivieren (alle)
+  label_enable_a_parent_status_id_filter: Eltern Statusfilter aktivieren (alle)
+  label_enable_child_tracker_id_filter: Kindes Trackerfilter aktivieren
+  label_enable_child_status_id_filter: Kindes Statusfilter aktivieren

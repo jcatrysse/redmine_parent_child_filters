@@ -2,9 +2,19 @@ fr:
   label_filter_group_parent_child: Parent et enfant
   label_filter_child_status_id: Statut de l'enfant
   label_filter_child_tracker_id: Suivi de l'enfant
-  label_filter_child_tracker_status_id: Tracker et statut de l'enfant
   label_filter_parent_status_id: Statut du parent
   label_filter_parent_tracker_id: Tracker du parent
+  label_filter_a_parent_status_id: Statut des parents (tout)
+  label_filter_a_parent_tracker_id: Tracker des parents (tout)
   label_filter_root: Ticket racine
   label_filter_root_status_id: Statut du ticket racine
   label_filter_root_tracker_id: Tracker du ticket racine
+  label_enable_root_id_filter: Activer le filtre racine
+  label_enable_root_tracker_id_filter: Activer le filtre de tracker du ticket racine
+  label_enable_root_status_id_filter: Activer le filtre de statut du ticket racine
+  label_enable_parent_tracker_id_filter: Activer le filtre de tracker du parent
+  label_enable_parent_status_id_filter: Activer le filtre de statut du parent
+  label_enable_a_parent_tracker_id_filter: Activer le filtre de tracker parent (tout)
+  label_enable_a_parent_status_id_filter: Activer le filtre de statut parent (tout)
+  label_enable_child_tracker_id_filter: Activer le filtre de suivi de l'enfant
+  label_enable_child_status_id_filter: Activer le filtre de statut de l'enfant

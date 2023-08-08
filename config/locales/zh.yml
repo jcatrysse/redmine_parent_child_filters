@@ -2,9 +2,19 @@ zh:
   label_filter_group_parent_child: 父与子
   label_filter_child_status_id: 子状态
   label_filter_child_tracker_id: 子票据追踪
-  label_filter_child_tracker_status_id: 子票据追踪及状态
   label_filter_parent_status_id: 父状态
   label_filter_parent_tracker_id: 父票据追踪
+  label_filter_a_parent_status_id: 父（任何）状态
+  label_filter_a_parent_tracker_id: 父（任何）跟踪器
   label_filter_root: 根票据
   label_filter_root_status_id: 根票据状态
   label_filter_root_tracker_id: 根票据追踪
+  label_enable_root_id_filter: 启用根过滤器
+  label_enable_root_tracker_id_filter: 启用根跟踪器过滤器
+  label_enable_root_status_id_filter: 启用根状态过滤器
+  label_enable_parent_tracker_id_filter: 启用父跟踪器过滤器
+  label_enable_parent_status_id_filter: 启用育儿状态过滤器
+  label_enable_a_parent_tracker_id_filter: 启用父跟踪器过滤器（全部）
+  label_enable_a_parent_status_id_filter: 启用父状态过滤器（全部）
+  label_enable_child_tracker_id_filter: 启用子跟踪器过滤器
+  label_enable_child_status_id_filter: 启用子状态过滤器
