@@ -1,4 +1,9 @@
 # CHANGELOG
+### 0.0.4
+* Filter on `a_parent_tracker` (any)
+* Filter on `a_parent_status` (any)
+* Add plugin settings to enable filters
+
 ### 0.0.3
 * Filter on `root`
 * Filter on `root_tracker`

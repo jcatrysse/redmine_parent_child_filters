@@ -12,6 +12,8 @@ Link to Redmine plugin page: https://www.redmine.org/plugins/redmine_parent_chil
 * Filter on `root_status`
 * Filter on `parent_tracker`
 * Filter on `parent_status`
+* Filter on `parent_tracker` (any parent)
+* Filter on `parent_status` (any parent)
 * Filter on `child_tracker`
 * Filter on `child_status`
 * Operator `not equal to` on `start_date` and `end_date`

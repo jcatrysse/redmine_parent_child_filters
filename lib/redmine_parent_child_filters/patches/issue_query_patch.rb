@@ -5,33 +5,51 @@ module RedmineParentChildFilters
       module InstanceMethods
         def initialize_available_filters_with_pcf
           initialize_available_filters_without_pcf
+
           add_available_filter(
             "root_id",
-            :type => :tree, :label => :label_filter_root)
+            :type => :tree, :label => :label_filter_root
+          ) if Setting.plugin_redmine_parent_child_filters['enable_root_id_filter']
+
           add_available_filter(
             "root_tracker_id",
             type: :list, values: trackers.collect { |s| [s.name, s.id.to_s] }, label: :label_filter_root_tracker_id
-          )
+          ) if Setting.plugin_redmine_parent_child_filters['enable_root_tracker_id_filter']
+
           add_available_filter(
             "root_status_id",
             type: :list_status, values: lambda { issue_statuses_values }, label: :label_filter_root_status_id
-          )
+          ) if Setting.plugin_redmine_parent_child_filters['enable_root_status_id_filter']
+
           add_available_filter(
             "parent_tracker_id",
             type: :list, values: trackers.collect { |s| [s.name, s.id.to_s] }, label: :label_filter_parent_tracker_id
-          )
+          ) if Setting.plugin_redmine_parent_child_filters['enable_parent_tracker_id_filter']
+
           add_available_filter(
             "parent_status_id",
             type: :list_status, values: lambda { issue_statuses_values }, label: :label_filter_parent_status_id
-          )
+          ) if Setting.plugin_redmine_parent_child_filters['enable_parent_status_id_filter']
+
+          add_available_filter(
+            "a_parent_tracker_id",
+            type: :list, values: trackers.collect { |s| [s.name, s.id.to_s] }, label: :label_filter_a_parent_tracker_id
+          ) if Setting.plugin_redmine_parent_child_filters['enable_a_parent_tracker_id_filter']
+
+          add_available_filter(
+            "a_parent_status_id",
+            type: :list_status, values: lambda { issue_statuses_values }, label: :label_filter_a_parent_status_id
+          ) if Setting.plugin_redmine_parent_child_filters['enable_a_parent_status_id_filter']
+
           add_available_filter(
             "child_tracker_id",
             type: :list, values: trackers.collect { |s| [s.name, s.id.to_s] }, label: :label_filter_child_tracker_id
-          )
+          ) if Setting.plugin_redmine_parent_child_filters['enable_child_tracker_id_filter']
+
           add_available_filter(
             "child_status_id",
             type: :list_status, values: lambda { issue_statuses_values }, label: :label_filter_child_status_id
-          )
+          ) if Setting.plugin_redmine_parent_child_filters['enable_child_status_id_filter']
         end
 
         def sql_for_root_id_field(field, operator, value)
@@ -98,6 +116,36 @@ module RedmineParentChildFilters
             "(#{Issue.table_name}.parent_id IN (SELECT id FROM #{Issue.table_name} WHERE status_id IN (SELECT id FROM #{IssueStatus.table_name} WHERE is_closed = #{ActiveRecord::Base.connection.quoted_false})))"
           when 'c'  # closed issues
             "(#{Issue.table_name}.parent_id IN (SELECT id FROM #{Issue.table_name} WHERE status_id IN (SELECT id FROM #{IssueStatus.table_name} WHERE is_closed = #{ActiveRecord::Base.connection.quoted_true})))"
+          when '*'  # all issues
+            nil  # return nil to include all issues regardless of status
+          end
+        end
+
+        def sql_for_a_parent_tracker_id_field(field, operator, value)
+          subquery = "EXISTS (SELECT 1  FROM #{Issue.table_name} AS ancestor  WHERE child.lft > ancestor.lft  AND child.rgt < ancestor.rgt  AND child.root_id = ancestor.root_id  AND ancestor.tracker_id IN (#{value.join(',')}))"
+
+          case operator
+          when '='
+            "(#{Issue.table_name}.id IN (SELECT child.id FROM #{Issue.table_name} AS child WHERE #{subquery}))"
+          when '!'
+            "(#{Issue.table_name}.id NOT IN (SELECT child.id FROM #{Issue.table_name} AS child WHERE #{subquery}))"
+          end
+        end
+
+        def sql_for_a_parent_status_id_field(field, operator, value)
+          subquery = "EXISTS (SELECT 1  FROM #{Issue.table_name} AS ancestor  WHERE child.lft > ancestor.lft  AND child.rgt < ancestor.rgt  AND child.root_id = ancestor.root_id  AND ancestor.status_id IN (#{value.join(',')}))"
+
+          case operator
+          when '='
+            "(#{Issue.table_name}.id IN (SELECT child.id FROM #{Issue.table_name} AS child WHERE #{subquery}))"
+          when '!'
+            "(#{Issue.table_name}.id NOT IN (SELECT child.id FROM #{Issue.table_name} AS child WHERE #{subquery}))"
+          when 'o'  # open issues
+            open_subquery = "EXISTS (SELECT 1  FROM #{Issue.table_name} AS ancestor  WHERE child.lft > ancestor.lft  AND child.rgt < ancestor.rgt  AND child.root_id = ancestor.root_id  AND ancestor.status_id IN (SELECT id FROM #{IssueStatus.table_name} WHERE is_closed = #{ActiveRecord::Base.connection.quoted_false}))"
+            "(#{Issue.table_name}.id IN (SELECT child.id FROM #{Issue.table_name} AS child WHERE #{open_subquery}))"
+          when 'c'  # closed issues
+            closed_subquery = "EXISTS (SELECT 1  FROM #{Issue.table_name} AS ancestor  WHERE child.lft > ancestor.lft  AND child.rgt < ancestor.rgt  AND child.root_id = ancestor.root_id  AND ancestor.status_id IN (SELECT id FROM #{IssueStatus.table_name} WHERE is_closed = #{ActiveRecord::Base.connection.quoted_true}))"
+            "(#{Issue.table_name}.id IN (SELECT child.id FROM #{Issue.table_name} AS child WHERE #{closed_subquery}))"
           when '*'  # all issues
             nil  # return nil to include all issues regardless of status
           end

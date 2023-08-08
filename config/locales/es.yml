@@ -2,9 +2,19 @@ es:
   label_filter_group_parent_child: Padre e hijo
   label_filter_child_status_id: Estado del hijo
   label_filter_child_tracker_id: Seguimiento del hijo
-  label_filter_child_tracker_status_id: Seguimiento y estado del hijo
   label_filter_parent_status_id: Estado del padre
   label_filter_parent_tracker_id: Seguimiento del padre
+  label_filter_a_parent_status_id: Estado del padre (todo)
+  label_filter_a_parent_tracker_id: Seguimiento del padre (todo)
   label_filter_root: Ticket raíz
   label_filter_root_status_id: Estado del ticket raíz
   label_filter_root_tracker_id: Seguimiento del ticket raíz
+  label_enable_root_id_filter: Habilitar filtro raíz
+  label_enable_root_tracker_id_filter: Habilitar el filtro del rastreador raíz
+  label_enable_root_status_id_filter: Habilitar el filtro de estado raíz
+  label_enable_parent_tracker_id_filter : Habilitar filtro de rastreador parental
+  label_enable_parent_status_id_filter: habilitar el filtro de estado parental
+  label_enable_a_parent_tracker_id_filter: Habilitar filtro de rastreador parental (todos)
+  label_enable_a_parent_status_id_filter: habilitar el filtro de estado parental (todos)
+  label_enable_child_tracker_id_filter : Habilitar filtro de rastreador de niños
+  label_enable_child_status_id_filter: Habilitar filtro de estado de niños
