@@ -1,8 +1,8 @@
 Redmine::Plugin.register :redmine_parent_child_filters do
-  name 'Parent Child Filters Plugin'
+  name 'Redmine Parent Child Filters Plugin'
   author 'Jan Catrysse'
   description 'Search issues by parent and child tracker and status'
-  version '0.0.4'
+  version '0.0.5'
   url 'https://github.com/jcatrysse/redmine_parent_child_filters'
   author_url 'https://github.com/jcatrysse'
 
@@ -16,8 +16,12 @@ Redmine::Plugin.register :redmine_parent_child_filters do
     'enable_parent_status_id_filter' => true,
     'enable_a_parent_tracker_id_filter' => true,
     'enable_a_parent_status_id_filter' => true,
+    'enable_a_specific_parent_tracker_id_filter' => true,
+    'enable_a_specific_parent_status_id_filter' => true,
     'enable_child_tracker_id_filter' => true,
     'enable_child_status_id_filter' => true,
+    'min_depth' => '1',
+    'max_depth' => '5'
   }, partial: 'settings/parent_child_filters_settings'
 end
 

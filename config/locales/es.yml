@@ -18,3 +18,7 @@ es:
   label_enable_a_parent_status_id_filter: habilitar el filtro de estado parental (todos)
   label_enable_child_tracker_id_filter : Habilitar filtro de rastreador de niños
   label_enable_child_status_id_filter: Habilitar filtro de estado de niños
+  label_min_depth: Profundidad mínima del filtro
+  label_max_depth: Profundidad máxima del filtro
+  label_general_filters_settings: Configuraciones Generales de Filtros
+  label_specific_filters_settings: Configuraciones de Filtros Específicos de Padres y Profundidad

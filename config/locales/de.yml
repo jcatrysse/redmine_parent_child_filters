@@ -18,3 +18,8 @@ de:
   label_enable_a_parent_status_id_filter: Eltern Statusfilter aktivieren (alle)
   label_enable_child_tracker_id_filter: Kindes Trackerfilter aktivieren
   label_enable_child_status_id_filter: Kindes Statusfilter aktivieren
+  label_min_depth: Minimale Filtertiefe
+  label_max_depth: Maximale Filtertiefe
+  label_general_filters_settings: Allgemeine Filtereinstellungen
+  label_specific_filters_settings: Spezifische Elternfilter- & Tiefeneinstellungen
+

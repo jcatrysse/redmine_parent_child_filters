@@ -6,15 +6,23 @@ en:
   label_filter_parent_tracker_id: Parent tracker
   label_filter_a_parent_status_id: Parent (any) status
   label_filter_a_parent_tracker_id: Parent (any) tracker
+  label_filter_a_specific_parent_status_id: Parent (specific) status
+  label_filter_a_specific_parent_tracker_id: Parent (specific) tracker
   label_filter_root: Root
   label_filter_root_status_id: Root status
   label_filter_root_tracker_id: Root tracker
-  label_enable_root_id_filter: Enable Root Filter
-  label_enable_root_tracker_id_filter: Enable Root Tracker Filter
-  label_enable_root_status_id_filter: Enable Root Status Filter
-  label_enable_parent_tracker_id_filter: Enable Parent Tracker Filter
-  label_enable_parent_status_id_filter: Enable Parent Status Filter
-  label_enable_a_parent_tracker_id_filter: Enable Parent (any) Tracker Filter
-  label_enable_a_parent_status_id_filter: Enable Parent (any) Status Filter
-  label_enable_child_tracker_id_filter: Enable Child Tracker Filter
-  label_enable_child_status_id_filter: Enable Child Status Filter
+  label_enable_root_id_filter: Root Filter
+  label_enable_root_tracker_id_filter: Root Tracker Filter
+  label_enable_root_status_id_filter: Root Status Filter
+  label_enable_parent_tracker_id_filter: Parent Tracker Filter
+  label_enable_parent_status_id_filter: Parent Status Filter
+  label_enable_a_parent_tracker_id_filter: Parent (any) Tracker Filter
+  label_enable_a_parent_status_id_filter: Parent (any) Status Filter
+  label_enable_a_specific_parent_tracker_id_filter: Parent (specific) Tracker Filter
+  label_enable_a_specific_parent_status_id_filter: Parent (specific) Status Filter
+  label_enable_child_tracker_id_filter: Child Tracker Filter
+  label_enable_child_status_id_filter: Child Status Filter
+  label_min_depth: Minimum filter depth
+  label_max_depth: Maximum filter depth
+  label_general_filters_settings: General Filters Settings
+  label_specific_filters_settings: Specific Parent Filters & Depth Settings

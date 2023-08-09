@@ -1,7 +1,12 @@
 # CHANGELOG
+### 0.0.5
+* Filter on `parent_tracker` (specific depth)
+* Filter on `parent_status` (specific depth)
+* Prefix plugin name with `Redmine`
+
 ### 0.0.4
-* Filter on `a_parent_tracker` (any)
-* Filter on `a_parent_status` (any)
+* Filter on `parent_tracker` (any depth)
+* Filter on `parent_status` (any depth)
 * Add plugin settings to enable filters
 
 ### 0.0.3

@@ -5,6 +5,8 @@ module RedmineParentChildFilters
       module InstanceMethods
         def initialize_available_filters_with_pcf
           initialize_available_filters_without_pcf
+          min_depth = Setting.plugin_redmine_parent_child_filters['min_depth'].to_i
+          max_depth = Setting.plugin_redmine_parent_child_filters['max_depth'].to_i
 
           add_available_filter(
             "root_id",
@@ -40,6 +42,32 @@ module RedmineParentChildFilters
             "a_parent_status_id",
             type: :list_status, values: lambda { issue_statuses_values }, label: :label_filter_a_parent_status_id
           ) if Setting.plugin_redmine_parent_child_filters['enable_a_parent_status_id_filter']
+
+          add_available_filter(
+            "a_specific_parent_tracker_id",
+            type: :list,
+            values: lambda {
+              trackers.flat_map do |tracker|
+                (min_depth..max_depth).map do |depth|
+                  ["(#{depth}) #{tracker.name}", "#{tracker.id}:#{depth}"]
+                end
+              end
+            },
+            label: :label_filter_a_specific_parent_tracker_id
+          ) if Setting.plugin_redmine_parent_child_filters['enable_a_specific_parent_tracker_id_filter']
+
+          add_available_filter(
+            "a_specific_parent_status_id",
+            type: :list,
+            values: lambda {
+              issue_statuses_values.flat_map do |status|
+                (min_depth..max_depth).map do |depth|
+                  ["(#{depth}) #{status.first}", "#{status.last}:#{depth}"]
+                end
+              end
+            },
+            label: :label_filter_a_specific_parent_status_id
+          ) if Setting.plugin_redmine_parent_child_filters['enable_a_specific_parent_status_id_filter']
 
           add_available_filter(
             "child_tracker_id",
@@ -148,6 +176,37 @@ module RedmineParentChildFilters
             "(#{Issue.table_name}.id IN (SELECT child.id FROM #{Issue.table_name} AS child WHERE #{closed_subquery}))"
           when '*'  # all issues
             nil  # return nil to include all issues regardless of status
+          end
+        end
+
+        def sql_for_a_specific_parent_tracker_id_field(field, operator, value)
+          tracker_ids, depths = value.map { |v| v.split(':') }.transpose
+          depth = depths.min.to_i
+          joins = (1..depth).map { |i| "INNER JOIN #{Issue.table_name} parent#{i} ON " + (i == 1 ? "#{Issue.table_name}.parent_id" : "parent#{i-1}.parent_id") + " = parent#{i}.id" }.join(' ')
+
+          where_clause = "parent#{depth}.tracker_id IN (#{tracker_ids.join(',')})"
+
+          case operator
+          when '='
+            "#{Issue.table_name}.id IN (SELECT #{Issue.table_name}.id FROM #{Issue.table_name} #{joins} WHERE #{where_clause})"
+          when '!'
+            "#{Issue.table_name}.id NOT IN (SELECT #{Issue.table_name}.id FROM #{Issue.table_name} #{joins} WHERE #{where_clause})"
+          end
+        end
+
+        def sql_for_a_specific_parent_status_id_field(field, operator, value)
+          status_ids, depths = value.map { |v| v.split(':') }.transpose
+          depth = depths.min.to_i
+
+          joins = (1..depth).map { |i| "INNER JOIN #{Issue.table_name} parent#{i} ON " + (i == 1 ? "#{Issue.table_name}.parent_id" : "parent#{i-1}.parent_id") + " = parent#{i}.id" }.join(' ')
+
+          where_clause = "parent#{depth}.status_id IN (#{status_ids.join(',')})"
+
+          case operator
+          when '='
+            "#{Issue.table_name}.id IN (SELECT #{Issue.table_name}.id FROM #{Issue.table_name} #{joins} WHERE #{where_clause})"
+          when '!'
+            "#{Issue.table_name}.id NOT IN (SELECT #{Issue.table_name}.id FROM #{Issue.table_name} #{joins} WHERE #{where_clause})"
           end
         end
 

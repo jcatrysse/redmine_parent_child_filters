@@ -18,3 +18,7 @@ zh:
   label_enable_a_parent_status_id_filter: 启用父状态过滤器（全部）
   label_enable_child_tracker_id_filter: 启用子跟踪器过滤器
   label_enable_child_status_id_filter: 启用子状态过滤器
+  label_min_depth: 过滤器最小深度
+  label_max_depth: 过滤器最大深度
+  label_general_filters_settings: 一般过滤器设置
+  label_specific_filters_settings: 特定父级过滤器和深度设置

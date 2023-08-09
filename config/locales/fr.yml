@@ -18,3 +18,7 @@ fr:
   label_enable_a_parent_status_id_filter: Activer le filtre de statut parent (tout)
   label_enable_child_tracker_id_filter: Activer le filtre de suivi de l'enfant
   label_enable_child_status_id_filter: Activer le filtre de statut de l'enfant
+  label_min_depth: Profondeur minimale du filtre
+  label_max_depth: Profondeur maximale du filtre
+  label_general_filters_settings: Paramètres Généraux des Filtres
+  label_specific_filters_settings: Paramètres des Filtres Spécifiques Parents & Profondeur

@@ -18,3 +18,7 @@ ro:
   label_enable_a_parent_status_id_filter: Activați filtrul de stare Parent (orice).
   label_enable_child_tracker_id_filter: Activați filtrul de urmărire a copiilor
   label_enable_child_status_id_filter: Activați filtrul pentru starea copilului
+  label_min_depth: Adâncime minimă a filtrului
+  label_max_depth: Adâncime maximă a filtrului
+  label_general_filters_settings: Setări Generale pentru Filtre
+  label_specific_filters_settings: Setări pentru Filtre Specifice Părinte & Adâncime

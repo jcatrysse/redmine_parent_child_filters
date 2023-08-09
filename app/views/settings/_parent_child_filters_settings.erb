@@ -1,45 +1,50 @@
-<p>
-  <%= label_tag 'enable_root_id_filter', t('labels.enable_root_id_filter') %>
-  <%= check_box_tag 'settings[enable_root_id_filter]', 1,
-                    @settings['enable_root_id_filter'] %>
-</p>
-<p>
-  <%= label_tag 'enable_root_tracker_id_filter', t('labels.enable_root_tracker_id_filter') %>
-  <%= check_box_tag 'settings[enable_root_tracker_id_filter]', 1,
-                    @settings['enable_root_tracker_id_filter'] %>
-</p>
-<p>
-  <%= label_tag 'enable_root_status_id_filter', t('labels.enable_root_status_id_filter') %>
-  <%= check_box_tag 'settings[enable_root_status_id_filter]', 1,
-                    @settings['enable_root_status_id_filter'] %>
-</p>
-<p>
-  <%= label_tag 'enable_parent_tracker_id_filter', t('labels.enable_parent_tracker_id_filter') %>
-  <%= check_box_tag 'settings[enable_parent_tracker_id_filter]', 1,
-                    @settings['enable_parent_tracker_id_filter'] %>
-</p>
-<p>
-  <%= label_tag 'enable_parent_status_id_filter', t('labels.enable_parent_status_id_filter') %>
-  <%= check_box_tag 'settings[enable_parent_status_id_filter]', 1,
-                    @settings['enable_parent_status_id_filter'] %>
-</p>
-<p>
-  <%= label_tag 'enable_a_parent_tracker_id_filter', t('labels.enable_a_parent_tracker_id_filter') %>
-  <%= check_box_tag 'settings[enable_a_parent_tracker_id_filter]', 1,
-                    @settings['enable_a_parent_tracker_id_filter'] %>
-</p>
-<p>
-  <%= label_tag 'enable_a_parent_status_id_filter', t('labels.enable_a_parent_status_id_filter') %>
-  <%= check_box_tag 'settings[enable_a_parent_status_id_filter]', 1,
-                    @settings['enable_a_parent_status_id_filter'] %>
-</p>
-<p>
-  <%= label_tag 'enable_child_tracker_id_filter', t('labels.enable_child_tracker_id_filter') %>
-  <%= check_box_tag 'settings[enable_child_tracker_id_filter]', 1,
-                    @settings['enable_child_tracker_id_filter'] %>
-</p>
-<p>
-  <%= label_tag 'enable_child_status_id_filter', t('labels.enable_child_status_id_filter') %>
-  <%= check_box_tag 'settings[enable_child_status_id_filter]', 1,
-                    @settings['enable_child_status_id_filter'] %>
-</p>
+<%
+  def render_check_box(setting_key)
+    content_tag :p do
+      label_tag(setting_key, t("label_#{setting_key}")) +
+        check_box_tag("settings[#{setting_key}]", 1, @settings[setting_key])
+    end
+  end
+%>
+<fieldset class="box tabular settings">
+  <legend><%= l(:label_general_filters_settings) %></legend>
+  <%= render_check_box('enable_root_id_filter') %>
+  <%= render_check_box('enable_root_tracker_id_filter') %>
+  <%= render_check_box('enable_root_status_id_filter') %>
+  <%= render_check_box('enable_parent_tracker_id_filter') %>
+  <%= render_check_box('enable_parent_status_id_filter') %>
+  <%= render_check_box('enable_a_parent_tracker_id_filter') %>
+  <%= render_check_box('enable_a_parent_status_id_filter') %>
+  <%= render_check_box('enable_child_tracker_id_filter') %>
+  <%= render_check_box('enable_child_status_id_filter') %>
+</fieldset>
+
+<fieldset class="box tabular settings">
+  <legend><%= l(:label_specific_filters_settings) %></legend>
+  <%= render_check_box('enable_a_specific_parent_tracker_id_filter') %>
+  <%= render_check_box('enable_a_specific_parent_status_id_filter') %>
+  <p>
+    <%= label_tag 'min_depth', t('label_min_depth') %>
+    <%= select_tag 'settings[min_depth]', options_for_select((1..10).to_a, @settings['min_depth'].to_i) %>
+  </p>
+  <p>
+    <%= label_tag 'max_depth', t('label_max_depth') %>
+    <%= select_tag 'settings[max_depth]', options_for_select((1..10).to_a, @settings['max_depth'].to_i) %>
+  </p>
+</fieldset>
+
+<%= javascript_tag do %>
+  function checkMinMax(){
+    var minDepth = parseInt($('#settings_min_depth').val());
+    var maxDepth = parseInt($('#settings_max_depth').val());
+    var changedElement = $(document.activeElement);
+    if (changedElement.attr('id') === 'settings_min_depth' && minDepth > maxDepth) {
+      $('#settings_max_depth').val(minDepth);
+    } else if (changedElement.attr('id') === 'settings_max_depth' && maxDepth < minDepth) {
+      $('#settings_min_depth').val(maxDepth);
+    }
+  }
+  $('#settings_min_depth, #settings_max_depth').change(checkMinMax);
+  $(document).ready(function() { checkMinMax(); });
+<% end %>
+
