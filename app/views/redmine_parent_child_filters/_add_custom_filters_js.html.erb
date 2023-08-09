@@ -1,0 +1,64 @@
+<% if Setting.plugin_redmine_parent_child_filters['enable_a_specific_parent_tracker_id_filter'] || Setting.plugin_redmine_parent_child_filters['enable_a_specific_parent_status_id_filter'] %>
+  <% if controller_name == "issues" || controller_name == "gantts" %>
+    <style>
+        #values_a_specific_parent_tracker_id_1 option.a-specific-parent-filter-custom-disabled,
+        #values_a_specific_parent_status_id_1 option.a-specific-parent-filter-custom-disabled {
+            color: #FFCCCB;
+        }
+    </style>
+
+    <script type="text/javascript">
+        $(document).ready(function() {
+            const $filtersTable = $("#filters-table");
+
+            function limitChoicesBasedOnDepth($element) {
+                const selectedDepths = $element.val() ? $element.val().map(value => value.split(':')[1]) : [];
+
+                // If nothing is selected, enable all options and return.
+                if (selectedDepths.length === 0) {
+                    $element.find('option').removeClass('a-specific-parent-filter-custom-disabled').prop('disabled', false);
+                    return;
+                }
+
+                // If any options are selected, limit the choices to those with the same depth.
+                $element.find('option').each(function() {
+                    const $option = $(this);
+                    const optionDepth = $option.val().split(':')[1];
+
+                    if (selectedDepths.includes(optionDepth)) {
+                        $option.removeClass('a-specific-parent-filter-custom-disabled').prop('disabled', false);
+                    } else {
+                        $option.addClass('a-specific-parent-filter-custom-disabled').prop('disabled', true);
+                    }
+                });
+            }
+
+            function limit_depth(event) {
+                const $changedElement = $(event.target);
+                if (!$changedElement.prop('multiple')) return;
+
+                limitChoicesBasedOnDepth($changedElement);
+            }
+
+            function enableValues(event) {
+                const $relatedSelect = $(event.target).prev('select');
+
+                // Use setTimeout to delay the execution
+                setTimeout(function() {
+                    if (!$relatedSelect.prop('multiple')) {
+                        $relatedSelect.find('option').removeClass('a-specific-parent-filter-custom-disabled').prop('disabled', false);
+                    } else {
+                        limitChoicesBasedOnDepth($relatedSelect);
+                    }
+                }, 0);
+            }
+
+            $($filtersTable).on('change', '#values_a_specific_parent_tracker_id_1', limit_depth);
+            $($filtersTable).on('change', '#values_a_specific_parent_status_id_1', limit_depth);
+            $($filtersTable).on('click', '#tr_a_specific_parent_tracker_id .toggle-multiselect', enableValues);
+            $($filtersTable).on('click', '#tr_a_specific_parent_status_id .toggle-multiselect', enableValues);
+
+        });
+    </script>
+  <% end %>
+<% end %>

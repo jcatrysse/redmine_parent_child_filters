@@ -1,15 +1,18 @@
 # CHANGELOG
-### 0.0.5
+## 0.1.0
+* Optimize UX for `specific depth` filters.
+
+## 0.0.5
 * Filter on `parent_tracker` (specific depth)
 * Filter on `parent_status` (specific depth)
 * Prefix plugin name with `Redmine`
 
-### 0.0.4
+## 0.0.4
 * Filter on `parent_tracker` (any depth)
 * Filter on `parent_status` (any depth)
 * Add plugin settings to enable filters
 
-### 0.0.3
+## 0.0.3
 * Filter on `root`
 * Filter on `root_tracker`
 * Filter on `root_status`
@@ -17,10 +20,10 @@
 * Resolved issue: `SystemStackError (stack level too deep)`  
   Converted `initialize_available_filters` to use `alias_method` 
 
-### 0.0.2
+## 0.0.2
 * Filters `child_tracker` and `child_status`, when combined, are now considering the same child
 
-### 0.0.1
+## 0.0.1
 * Initial commit
 * Filter on `parent_tracker`
 * Filter on `parent_status`

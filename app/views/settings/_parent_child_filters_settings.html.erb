@@ -33,18 +33,23 @@
   </p>
 </fieldset>
 
-<%= javascript_tag do %>
-  function checkMinMax(){
-    var minDepth = parseInt($('#settings_min_depth').val());
-    var maxDepth = parseInt($('#settings_max_depth').val());
-    var changedElement = $(document.activeElement);
-    if (changedElement.attr('id') === 'settings_min_depth' && minDepth > maxDepth) {
-      $('#settings_max_depth').val(minDepth);
-    } else if (changedElement.attr('id') === 'settings_max_depth' && maxDepth < minDepth) {
-      $('#settings_min_depth').val(maxDepth);
-    }
-  }
-  $('#settings_min_depth, #settings_max_depth').change(checkMinMax);
-  $(document).ready(function() { checkMinMax(); });
-<% end %>
+<script type="text/javascript">
+    $(document).ready(function(){
+        const $minDepth = $('#settings_min_depth');
+        const $maxDepth = $('#settings_max_depth');
 
+        function checkMinMax(event){
+            const minDepthValue = parseInt($minDepth.val(), 10);
+            const maxDepthValue = parseInt($maxDepth.val(), 10);
+            const $changedElement = $(event.target); // Get the jQuery object of the element that triggered the event
+            if ($changedElement.attr('id') === 'settings_min_depth' && minDepthValue > maxDepthValue) {
+                $maxDepth.val(minDepthValue);
+            } else if ($changedElement.attr('id') === 'settings_max_depth' && maxDepthValue < minDepthValue) {
+                $minDepth.val(maxDepthValue);
+            }
+        }
+
+        $minDepth.change(checkMinMax);
+        $maxDepth.change(checkMinMax);
+    });
+</script>
