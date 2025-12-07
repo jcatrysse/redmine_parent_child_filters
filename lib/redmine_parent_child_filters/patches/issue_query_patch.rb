@@ -78,6 +78,38 @@ module RedmineParentChildFilters
             "child_status_id",
             type: :list_status, values: lambda { issue_statuses_values }, label: :label_filter_child_status_id
           ) if Setting.plugin_redmine_parent_child_filters['enable_child_status_id_filter']
+
+          add_available_filter(
+            "tree_has_parent_or_child",
+            type: :list,
+            values: [[l(:general_text_yes), '1'], [l(:general_text_no), '0']],
+            label: :label_filter_tree_has_parent_or_child
+          ) if Setting.plugin_redmine_parent_child_filters['enable_tree_has_parent_or_child_filter']
+
+          add_available_filter(
+            "tree_tracker_id",
+            type: :list, values: trackers.collect { |s| [s.name, s.id.to_s] }, label: :label_filter_tree_tracker_id
+          ) if Setting.plugin_redmine_parent_child_filters['enable_tree_tracker_id_filter']
+
+          add_available_filter(
+            "tree_parent_tracker_id",
+            type: :list, values: trackers.collect { |s| [s.name, s.id.to_s] }, label: :label_filter_tree_parent_tracker_id
+          ) if Setting.plugin_redmine_parent_child_filters['enable_tree_parent_tracker_id_filter']
+
+          add_available_filter(
+            "tree_parent_status_id",
+            type: :list_status, values: lambda { issue_statuses_values }, label: :label_filter_tree_parent_status_id
+          ) if Setting.plugin_redmine_parent_child_filters['enable_tree_parent_status_id_filter']
+
+          add_available_filter(
+            "tree_child_tracker_id",
+            type: :list, values: trackers.collect { |s| [s.name, s.id.to_s] }, label: :label_filter_tree_child_tracker_id
+          ) if Setting.plugin_redmine_parent_child_filters['enable_tree_child_tracker_id_filter']
+
+          add_available_filter(
+            "tree_child_status_id",
+            type: :list_status, values: lambda { issue_statuses_values }, label: :label_filter_tree_child_status_id
+          ) if Setting.plugin_redmine_parent_child_filters['enable_tree_child_status_id_filter']
         end
 
         def sql_for_root_id_field(field, operator, value)
@@ -253,6 +285,84 @@ module RedmineParentChildFilters
             status_filter = "(#{Issue.table_name}.id IN (SELECT parent_id FROM #{Issue.table_name}))"
           end unless filters && filters.key?('child_tracker_id')
           status_filter
+        end
+
+        def sql_for_tree_has_parent_or_child_field(field, operator, value)
+          tree_scope = "SELECT DISTINCT scope.root_id FROM #{Issue.table_name} scope WHERE scope.parent_id IS NOT NULL OR EXISTS (SELECT 1 FROM #{Issue.table_name} child WHERE child.parent_id = scope.id)"
+          tree_condition(tree_scope, operator, value.include?('yes') || value.include?('1'))
+        end
+
+        def sql_for_tree_tracker_id_field(field, operator, value)
+          subquery = "EXISTS (SELECT 1  FROM #{Issue.table_name} AS ancestor  WHERE child.lft > ancestor.lft  AND child.rgt < ancestor.rgt  AND child.root_id = ancestor.root_id  AND ancestor.tracker_id IN (#{value.join(',')}))"
+
+          case operator
+          when '='
+            "(#{Issue.table_name}.tracker_id IN (#{value.join(',')}) OR #{Issue.table_name}.id IN (SELECT child.id FROM #{Issue.table_name} AS child WHERE #{subquery}))"
+          when '!'
+            "(#{Issue.table_name}.tracker_id NOT IN (#{value.join(',')}) AND #{Issue.table_name}.id NOT IN (SELECT child.id FROM #{Issue.table_name} AS child WHERE #{subquery}))"
+          end
+        end
+
+        def sql_for_tree_parent_tracker_id_field(field, operator, value)
+          subquery = "SELECT DISTINCT child.root_id FROM #{Issue.table_name} child INNER JOIN #{Issue.table_name} parent ON child.parent_id = parent.id WHERE parent.tracker_id IN (#{value.join(',')})"
+          tree_condition(subquery, operator)
+        end
+
+        def sql_for_tree_parent_status_id_field(field, operator, value)
+          status_condition = case operator
+                             when '='
+                               "parent.status_id IN (#{value.join(',')})"
+                             when '!'
+                               "parent.status_id IN (#{value.join(',')})"
+                             when 'o'
+                               "parent.status_id IN (SELECT id FROM #{IssueStatus.table_name} WHERE is_closed = #{ActiveRecord::Base.connection.quoted_false})"
+                             when 'c'
+                               "parent.status_id IN (SELECT id FROM #{IssueStatus.table_name} WHERE is_closed = #{ActiveRecord::Base.connection.quoted_true})"
+                             when '*'
+                               nil
+                             end
+
+          return if status_condition.nil?
+
+          subquery = "SELECT DISTINCT child.root_id FROM #{Issue.table_name} child INNER JOIN #{Issue.table_name} parent ON child.parent_id = parent.id WHERE #{status_condition}"
+
+          tree_condition(subquery, operator)
+        end
+
+        def sql_for_tree_child_tracker_id_field(field, operator, value)
+          subquery = "SELECT DISTINCT parent.root_id FROM #{Issue.table_name} parent WHERE EXISTS (SELECT 1 FROM #{Issue.table_name} child WHERE child.parent_id = parent.id AND child.tracker_id #{operator == '!' ? 'NOT IN' : 'IN'} (#{value.join(',')}))"
+          tree_condition(subquery, operator)
+        end
+
+        def sql_for_tree_child_status_id_field(field, operator, value)
+          status_condition = case operator
+                             when '=', '!'
+                               "child.status_id #{operator == '=' ? 'IN' : 'NOT IN'} (#{value.join(',')})"
+                             when 'o'
+                               "child.status_id IN (SELECT id FROM #{IssueStatus.table_name} WHERE is_closed=#{self.class.connection.quoted_false})"
+                             when 'c'
+                               "child.status_id IN (SELECT id FROM #{IssueStatus.table_name} WHERE is_closed=#{self.class.connection.quoted_true})"
+                             when '*'
+                               nil
+                             end
+
+          return if status_condition.nil?
+
+          subquery = "SELECT DISTINCT parent.root_id FROM #{Issue.table_name} parent WHERE EXISTS (SELECT 1 FROM #{Issue.table_name} child WHERE child.parent_id = parent.id AND #{status_condition})"
+          tree_condition(subquery, operator)
+        end
+
+        def tree_condition(subquery, operator, positive = true)
+          case operator
+          when '='
+            positive ? "#{Issue.table_name}.root_id IN (#{subquery})" : "#{Issue.table_name}.root_id NOT IN (#{subquery})"
+          when '!'
+            positive ? "#{Issue.table_name}.root_id NOT IN (#{subquery})" : "#{Issue.table_name}.root_id IN (#{subquery})"
+          when 'o', 'c'
+            "#{Issue.table_name}.root_id IN (#{subquery})"
+          else
+            positive ? "#{Issue.table_name}.root_id IN (#{subquery})" : "#{Issue.table_name}.root_id NOT IN (#{subquery})"
+          end
         end
 
       end

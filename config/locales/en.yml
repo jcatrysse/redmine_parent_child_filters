@@ -8,6 +8,12 @@ en:
   label_filter_a_parent_tracker_id: Parent (any) tracker
   label_filter_a_specific_parent_status_id: Parent (specific) status
   label_filter_a_specific_parent_tracker_id: Parent (specific) tracker
+  label_filter_tree_has_parent_or_child: "Tree: has parent or child"
+  label_filter_tree_tracker_id: "Tree: tracker (self or ancestor)"
+  label_filter_tree_parent_status_id: "Tree: parent status"
+  label_filter_tree_parent_tracker_id: "Tree: parent tracker"
+  label_filter_tree_child_status_id: "Tree: child status"
+  label_filter_tree_child_tracker_id: "Tree: child tracker"
   label_filter_root: Root
   label_filter_root_status_id: Root status
   label_filter_root_tracker_id: Root tracker
@@ -22,7 +28,14 @@ en:
   label_enable_a_specific_parent_status_id_filter: Parent (specific) Status Filter
   label_enable_child_tracker_id_filter: Child Tracker Filter
   label_enable_child_status_id_filter: Child Status Filter
+  label_enable_tree_has_parent_or_child_filter: Tree Has Parent or Child Filter
+  label_enable_tree_tracker_id_filter: Tree Tracker (Self or Ancestor) Filter
+  label_enable_tree_parent_tracker_id_filter: Tree Parent Tracker Filter
+  label_enable_tree_parent_status_id_filter: Tree Parent Status Filter
+  label_enable_tree_child_tracker_id_filter: Tree Child Tracker Filter
+  label_enable_tree_child_status_id_filter: Tree Child Status Filter
   label_min_depth: Minimum filter depth
   label_max_depth: Maximum filter depth
   label_general_filters_settings: General Filters Settings
+  label_tree_filters_settings: Tree Filters Settings
   label_specific_filters_settings: Specific Parent Filters & Depth Settings

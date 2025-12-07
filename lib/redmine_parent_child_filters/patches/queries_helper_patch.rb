@@ -6,7 +6,7 @@ module RedmineParentChildFilters
     module QueriesHelperPatch
       module InstanceMethods
         def filters_options_for_select(query)
-          new_filters = %w[root_id root_tracker_id root_status_id parent_id parent_tracker_id parent_status_id a_parent_tracker_id a_parent_status_id a_specific_parent_tracker_id a_specific_parent_status_id child_id child_tracker_id child_status_id]
+          new_filters = %w[root_id root_tracker_id root_status_id parent_id parent_tracker_id parent_status_id a_parent_tracker_id a_parent_status_id a_specific_parent_tracker_id a_specific_parent_status_id child_id child_tracker_id child_status_id tree_has_parent_or_child tree_tracker_id tree_parent_tracker_id tree_parent_status_id tree_child_tracker_id tree_child_status_id]
           new_group = :label_filter_group_parent_child
           ungrouped = []
           grouped = {}

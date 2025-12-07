@@ -1,4 +1,11 @@
 # CHANGELOG
+
+## 0.2.0
+* Add tree-wide filters to surface complete hierarchies alongside existing parent/child filters.
+* Document and translate the new tree filter options and settings toggles.
+* Introduce RSpec test coverage for the full filter suite.
+* Introduce GitHub actions.
+
 ## 0.1.0
 * Optimize UX for `specific depth` filters.
 

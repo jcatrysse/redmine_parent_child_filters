@@ -28,6 +28,14 @@ Link to Redmine plugin page: [Redmine Parent Child Filters Plugin](https://www.r
     * `child_tracker`
     * `child_status`
 
+* **Tree Filters**: Surface the entire hierarchy when a parent/child match is found without changing the behavior of the existing filters.
+    * `tree_has_parent_or_child`
+    * `tree_tracker` (ancestor or self, plus its descendants)
+    * `tree_parent_tracker`
+    * `tree_parent_status`
+    * `tree_child_tracker`
+    * `tree_child_status`
+
 * **Additional Operators**: Enhance your filtering capabilities with additional operators.
     * Operator `not equal to` on `start_date` and `end_date`
 
@@ -49,6 +57,13 @@ Don't forget to restart your Redmine afterward!
 ## Uninstall
 * Simply remove the plugin folder.
 * Restart Redmine for the changes to take effect.
+
+## Development
+
+Tests can be run using:
+```bash
+RAILS_ENV=test bundle exec rspec plugins/redmine_parent_child_filters/spec
+```
 
 ## License
 Distributed under the MIT License. Enjoy the flexibility and freedom it brings!
