@@ -1,4 +1,7 @@
 # Redmine Parent Child Filters Plugin
+
+**Version: 0.2.0 is in the alpha stage: do not use it in production yet!**
+
 This plugin provides advanced filtering capabilities for issues in Redmine based on their hierarchical relationships, allowing you to filter based on the `trackers` and `status` of parent and child issues.
 
 Link to Redmine plugin page: [Redmine Parent Child Filters Plugin](https://www.redmine.org/plugins/redmine_parent_child_filters)
@@ -28,9 +31,10 @@ Link to Redmine plugin page: [Redmine Parent Child Filters Plugin](https://www.r
     * `child_tracker`
     * `child_status`
 
-* **Tree Filters**: Surface the entire hierarchy when a parent/child match is found without changing the behavior of the existing filters.
-    * `tree_has_parent_or_child`
-    * `tree_tracker` (ancestor or self, plus its descendants)
+* **Tree Filters**: Surface the entire hierarchy when a parent/child match is found, and also show standalone issues (no parents or children) that match the same tracker or status criteria without changing the behavior of the existing filters.
+    * `tree_has_parent_or_child` (can be used to filter standalone issues or issues with parents or children)
+    * `tree_tracker` (tree-wide tracker match)
+    * `tree_status` (tree-wide status match)
     * `tree_parent_tracker`
     * `tree_parent_status`
     * `tree_child_tracker`

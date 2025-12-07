@@ -92,6 +92,11 @@ module RedmineParentChildFilters
           ) if Setting.plugin_redmine_parent_child_filters['enable_tree_tracker_id_filter']
 
           add_available_filter(
+            "tree_status_id",
+            type: :list_status, values: lambda { issue_statuses_values }, label: :label_filter_tree_status_id
+          ) if Setting.plugin_redmine_parent_child_filters['enable_tree_status_id_filter']
+
+          add_available_filter(
             "tree_parent_tracker_id",
             type: :list, values: trackers.collect { |s| [s.name, s.id.to_s] }, label: :label_filter_tree_parent_tracker_id
           ) if Setting.plugin_redmine_parent_child_filters['enable_tree_parent_tracker_id_filter']
@@ -293,18 +298,32 @@ module RedmineParentChildFilters
         end
 
         def sql_for_tree_tracker_id_field(field, operator, value)
-          subquery = "EXISTS (SELECT 1  FROM #{Issue.table_name} AS ancestor  WHERE child.lft > ancestor.lft  AND child.rgt < ancestor.rgt  AND child.root_id = ancestor.root_id  AND ancestor.tracker_id IN (#{value.join(',')}))"
+          subquery = "SELECT DISTINCT tree.root_id FROM #{Issue.table_name} tree WHERE tree.tracker_id IN (#{value.join(',')})"
+          tree_condition(subquery, operator)
+        end
 
-          case operator
-          when '='
-            "(#{Issue.table_name}.tracker_id IN (#{value.join(',')}) OR #{Issue.table_name}.id IN (SELECT child.id FROM #{Issue.table_name} AS child WHERE #{subquery}))"
-          when '!'
-            "(#{Issue.table_name}.tracker_id NOT IN (#{value.join(',')}) AND #{Issue.table_name}.id NOT IN (SELECT child.id FROM #{Issue.table_name} AS child WHERE #{subquery}))"
-          end
+        def sql_for_tree_status_id_field(field, operator, value)
+          status_condition = case operator
+                             when '=', '!'
+                               "tree.status_id IN (#{value.join(',')})"
+                             when 'o'
+                               "tree.status_id IN (SELECT id FROM #{IssueStatus.table_name} WHERE is_closed=#{self.class.connection.quoted_false})"
+                             when 'c'
+                               "tree.status_id IN (SELECT id FROM #{IssueStatus.table_name} WHERE is_closed=#{self.class.connection.quoted_true})"
+                             when '*'
+                               nil
+                             end
+
+          return if status_condition.nil?
+
+          subquery = "SELECT DISTINCT tree.root_id FROM #{Issue.table_name} tree WHERE #{status_condition}"
+          tree_condition(subquery, operator)
         end
 
         def sql_for_tree_parent_tracker_id_field(field, operator, value)
-          subquery = "SELECT DISTINCT child.root_id FROM #{Issue.table_name} child INNER JOIN #{Issue.table_name} parent ON child.parent_id = parent.id WHERE parent.tracker_id IN (#{value.join(',')})"
+          parent_match = "SELECT DISTINCT child.root_id FROM #{Issue.table_name} child INNER JOIN #{Issue.table_name} parent ON child.parent_id = parent.id WHERE parent.tracker_id IN (#{value.join(',')})"
+          single_match = "SELECT DISTINCT #{Issue.table_name}.root_id FROM #{Issue.table_name} WHERE tracker_id IN (#{value.join(',')}) AND parent_id IS NULL AND NOT EXISTS (SELECT 1 FROM #{Issue.table_name} child WHERE child.parent_id = #{Issue.table_name}.id)"
+          subquery = "#{parent_match} UNION #{single_match}"
           tree_condition(subquery, operator)
         end
 
@@ -324,20 +343,24 @@ module RedmineParentChildFilters
 
           return if status_condition.nil?
 
-          subquery = "SELECT DISTINCT child.root_id FROM #{Issue.table_name} child INNER JOIN #{Issue.table_name} parent ON child.parent_id = parent.id WHERE #{status_condition}"
+          parent_match = "SELECT DISTINCT child.root_id FROM #{Issue.table_name} child INNER JOIN #{Issue.table_name} parent ON child.parent_id = parent.id WHERE #{status_condition}"
+          single_match = "SELECT DISTINCT #{Issue.table_name}.root_id FROM #{Issue.table_name} WHERE #{status_condition.gsub('parent.', '')} AND parent_id IS NULL AND NOT EXISTS (SELECT 1 FROM #{Issue.table_name} child WHERE child.parent_id = #{Issue.table_name}.id)"
+          subquery = "#{parent_match} UNION #{single_match}"
 
           tree_condition(subquery, operator)
         end
 
         def sql_for_tree_child_tracker_id_field(field, operator, value)
-          subquery = "SELECT DISTINCT parent.root_id FROM #{Issue.table_name} parent WHERE EXISTS (SELECT 1 FROM #{Issue.table_name} child WHERE child.parent_id = parent.id AND child.tracker_id #{operator == '!' ? 'NOT IN' : 'IN'} (#{value.join(',')}))"
+          child_match = "SELECT DISTINCT parent.root_id FROM #{Issue.table_name} parent WHERE EXISTS (SELECT 1 FROM #{Issue.table_name} child WHERE child.parent_id = parent.id AND child.tracker_id IN (#{value.join(',')}))"
+          single_match = "SELECT DISTINCT #{Issue.table_name}.root_id FROM #{Issue.table_name} WHERE tracker_id IN (#{value.join(',')}) AND parent_id IS NULL AND NOT EXISTS (SELECT 1 FROM #{Issue.table_name} child WHERE child.parent_id = #{Issue.table_name}.id)"
+          subquery = "#{child_match} UNION #{single_match}"
           tree_condition(subquery, operator)
         end
 
         def sql_for_tree_child_status_id_field(field, operator, value)
           status_condition = case operator
                              when '=', '!'
-                               "child.status_id #{operator == '=' ? 'IN' : 'NOT IN'} (#{value.join(',')})"
+                               "child.status_id IN (#{value.join(',')})"
                              when 'o'
                                "child.status_id IN (SELECT id FROM #{IssueStatus.table_name} WHERE is_closed=#{self.class.connection.quoted_false})"
                              when 'c'
@@ -348,7 +371,9 @@ module RedmineParentChildFilters
 
           return if status_condition.nil?
 
-          subquery = "SELECT DISTINCT parent.root_id FROM #{Issue.table_name} parent WHERE EXISTS (SELECT 1 FROM #{Issue.table_name} child WHERE child.parent_id = parent.id AND #{status_condition})"
+          child_match = "SELECT DISTINCT parent.root_id FROM #{Issue.table_name} parent WHERE EXISTS (SELECT 1 FROM #{Issue.table_name} child WHERE child.parent_id = parent.id AND #{status_condition})"
+          single_match = "SELECT DISTINCT #{Issue.table_name}.root_id FROM #{Issue.table_name} WHERE #{status_condition.gsub('child.', '')} AND parent_id IS NULL AND NOT EXISTS (SELECT 1 FROM #{Issue.table_name} child WHERE child.parent_id = #{Issue.table_name}.id)"
+          subquery = "#{child_match} UNION #{single_match}"
           tree_condition(subquery, operator)
         end
 

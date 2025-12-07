@@ -27,6 +27,7 @@ module Setting
       'enable_child_status_id_filter' => false,
       'enable_tree_has_parent_or_child_filter' => true,
       'enable_tree_tracker_id_filter' => true,
+      'enable_tree_status_id_filter' => true,
       'enable_tree_parent_tracker_id_filter' => true,
       'enable_tree_parent_status_id_filter' => true,
       'enable_tree_child_tracker_id_filter' => true,

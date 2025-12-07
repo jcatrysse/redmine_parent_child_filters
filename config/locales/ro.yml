@@ -6,7 +6,8 @@ ro:
   label_filter_parent_tracker_id: Urmărirea părintelui
   label_filter_a_parent_status_id: Starea părintelui (toţi)
   label_filter_a_parent_tracker_id: Urmărirea părintelui (toţi)
-  label_filter_tree_tracker_id: "Arbore: tracker (propriu sau ascendent)"
+  label_filter_tree_tracker_id: "Arbore: tracker"
+  label_filter_tree_status_id: "Arbore: stare"
   label_filter_tree_has_parent_or_child: "Arbore: are părinte sau copil"
   label_filter_tree_parent_status_id: "Arbore: starea părintelui"
   label_filter_tree_parent_tracker_id: "Arbore: urmărirea părintelui"
@@ -25,7 +26,8 @@ ro:
   label_enable_child_tracker_id_filter: Activați filtrul de urmărire a copiilor
   label_enable_child_status_id_filter: Activați filtrul pentru starea copilului
   label_enable_tree_has_parent_or_child_filter: Activați filtrul arbore părinte sau copil
-  label_enable_tree_tracker_id_filter: Activați filtrul arbore pentru tracker (propriu sau ascendent)
+  label_enable_tree_tracker_id_filter: Activați filtrul arbore pentru tracker
+  label_enable_tree_status_id_filter: Activați filtrul arbore pentru stare
   label_enable_tree_parent_tracker_id_filter: Activați filtrul arbore pentru urmărirea părintelui
   label_enable_tree_parent_status_id_filter: Activați filtrul arbore pentru starea părintelui
   label_enable_tree_child_tracker_id_filter: Activați filtrul arbore pentru urmărirea copilului

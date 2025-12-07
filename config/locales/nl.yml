@@ -8,7 +8,8 @@ nl:
   label_filter_a_parent_tracker_id: Parent (elke) tracker
   label_filter_a_specific_parent_status_id: Parent (specifiek) status
   label_filter_a_specific_parent_tracker_id: Parent (specifiek) tracker
-  label_filter_tree_tracker_id: "Boom: tracker (zelf of voorouder)"
+  label_filter_tree_tracker_id: "Boom: tracker"
+  label_filter_tree_status_id: "Boom: status"
   label_filter_tree_has_parent_or_child: "Boom: heeft parent of child"
   label_filter_tree_parent_status_id: "Boom: parent status"
   label_filter_tree_parent_tracker_id: "Boom: parent tracker"
@@ -29,7 +30,8 @@ nl:
   label_enable_child_tracker_id_filter: Child Tracker Filter
   label_enable_child_status_id_filter: Child Status Filter
   label_enable_tree_has_parent_or_child_filter: Boom Parent of Child Filter
-  label_enable_tree_tracker_id_filter: Boom Tracker (zelf of voorouder) Filter
+  label_enable_tree_tracker_id_filter: Boom tracker filter
+  label_enable_tree_status_id_filter: Boom status filter
   label_enable_tree_parent_tracker_id_filter: Boom Parent Tracker Filter
   label_enable_tree_parent_status_id_filter: Boom Parent Status Filter
   label_enable_tree_child_tracker_id_filter: Boom Child Tracker Filter

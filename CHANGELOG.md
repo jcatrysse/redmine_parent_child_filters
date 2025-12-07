@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## 0.2.0
+## 0.2.0 (ALPHA version: do not use in production)
 * Add tree-wide filters to surface complete hierarchies alongside existing parent/child filters.
 * Document and translate the new tree filter options and settings toggles.
 * Introduce RSpec test coverage for the full filter suite.

@@ -22,6 +22,7 @@ Redmine::Plugin.register :redmine_parent_child_filters do
     'enable_child_status_id_filter' => true,
     'enable_tree_has_parent_or_child_filter' => true,
     'enable_tree_tracker_id_filter' => true,
+    'enable_tree_status_id_filter' => true,
     'enable_tree_parent_tracker_id_filter' => true,
     'enable_tree_parent_status_id_filter' => true,
     'enable_tree_child_tracker_id_filter' => true,

@@ -1,4 +1,4 @@
-require 'spec_helper'
+require_relative 'spec_helper'
 require_relative '../lib/redmine_parent_child_filters/patches/issue_query_patch'
 
 RSpec.describe IssueQuery do
@@ -11,6 +11,14 @@ RSpec.describe IssueQuery do
 
       expect(query.available_filters).to have_key('tree_tracker_id')
       expect(query.available_filters['tree_tracker_id'][:label]).to eq(:label_filter_tree_tracker_id)
+    end
+
+    it 'registers the tree status filter when enabled' do
+      query.initialize_available_filters
+      query.initialize_available_filters_with_pcf
+
+      expect(query.available_filters).to have_key('tree_status_id')
+      expect(query.available_filters['tree_status_id'][:label]).to eq(:label_filter_tree_status_id)
     end
 
     it 'exposes tree hierarchy membership as a list with yes/no values' do
@@ -172,9 +180,35 @@ RSpec.describe IssueQuery do
   end
 
   describe '#sql_for_tree_tracker_id_field' do
-    it 'unions ancestors and descendants that match the tracker list' do
+    it 'selects trees where any issue matches the tracker list' do
       expect(query.sql_for_tree_tracker_id_field('tree_tracker_id', '=', ['7'])).to eq(
-        '(issues.tracker_id IN (7) OR issues.id IN (SELECT child.id FROM issues AS child WHERE EXISTS (SELECT 1  FROM issues AS ancestor  WHERE child.lft > ancestor.lft  AND child.rgt < ancestor.rgt  AND child.root_id = ancestor.root_id  AND ancestor.tracker_id IN (7))))'
+        'issues.root_id IN (SELECT DISTINCT tree.root_id FROM issues tree WHERE tree.tracker_id IN (7))'
+      )
+    end
+
+    it 'excludes trees when no issue matches the tracker list' do
+      expect(query.sql_for_tree_tracker_id_field('tree_tracker_id', '!', ['8'])).to eq(
+        'issues.root_id NOT IN (SELECT DISTINCT tree.root_id FROM issues tree WHERE tree.tracker_id IN (8))'
+      )
+    end
+  end
+
+  describe '#sql_for_tree_status_id_field' do
+    it 'selects trees where any issue matches the status list' do
+      expect(query.sql_for_tree_status_id_field('tree_status_id', '=', ['4'])).to eq(
+        'issues.root_id IN (SELECT DISTINCT tree.root_id FROM issues tree WHERE tree.status_id IN (4))'
+      )
+    end
+
+    it 'applies the operator to the entire tree' do
+      expect(query.sql_for_tree_status_id_field('tree_status_id', '!', ['6'])).to eq(
+        'issues.root_id NOT IN (SELECT DISTINCT tree.root_id FROM issues tree WHERE tree.status_id IN (6))'
+      )
+    end
+
+    it 'filters by open statuses across the tree' do
+      expect(query.sql_for_tree_status_id_field('tree_status_id', 'o', [])).to eq(
+        'issues.root_id IN (SELECT DISTINCT tree.root_id FROM issues tree WHERE tree.status_id IN (SELECT id FROM issue_statuses WHERE is_closed=FALSE))'
       )
     end
   end
@@ -200,7 +234,7 @@ RSpec.describe IssueQuery do
   describe '#sql_for_tree_parent_tracker_id_field' do
     it 'builds tree selection for parent tracker matches' do
       expect(query.sql_for_tree_parent_tracker_id_field('tree_parent_tracker_id', '=', ['2'])).to eq(
-        'issues.root_id IN (SELECT DISTINCT child.root_id FROM issues child INNER JOIN issues parent ON child.parent_id = parent.id WHERE parent.tracker_id IN (2))'
+        'issues.root_id IN (SELECT DISTINCT child.root_id FROM issues child INNER JOIN issues parent ON child.parent_id = parent.id WHERE parent.tracker_id IN (2) UNION SELECT DISTINCT issues.root_id FROM issues WHERE tracker_id IN (2) AND parent_id IS NULL AND NOT EXISTS (SELECT 1 FROM issues child WHERE child.parent_id = issues.id))'
       )
     end
   end
@@ -212,12 +246,19 @@ RSpec.describe IssueQuery do
 
     it 'builds a subquery for matching parent statuses' do
       expect(query.sql_for_tree_parent_status_id_field('tree_parent_status_id', '=', ['1', '2']))
-        .to eq('issues.root_id IN (SELECT DISTINCT child.root_id FROM issues child INNER JOIN issues parent ON child.parent_id = parent.id WHERE parent.status_id IN (1,2))')
+        .to eq('issues.root_id IN (SELECT DISTINCT child.root_id FROM issues child INNER JOIN issues parent ON child.parent_id = parent.id WHERE parent.status_id IN (1,2) UNION SELECT DISTINCT issues.root_id FROM issues WHERE status_id IN (1,2) AND parent_id IS NULL AND NOT EXISTS (SELECT 1 FROM issues child WHERE child.parent_id = issues.id))')
     end
 
     it 'uses closed condition when filtering closed parent statuses' do
       expect(query.sql_for_tree_parent_status_id_field('tree_parent_status_id', 'c', []))
-        .to eq('issues.root_id IN (SELECT DISTINCT child.root_id FROM issues child INNER JOIN issues parent ON child.parent_id = parent.id WHERE parent.status_id IN (SELECT id FROM issue_statuses WHERE is_closed = TRUE))')
+        .to eq('issues.root_id IN (SELECT DISTINCT child.root_id FROM issues child INNER JOIN issues parent ON child.parent_id = parent.id WHERE parent.status_id IN (SELECT id FROM issue_statuses WHERE is_closed = TRUE) UNION SELECT DISTINCT issues.root_id FROM issues WHERE status_id IN (SELECT id FROM issue_statuses WHERE is_closed = TRUE) AND parent_id IS NULL AND NOT EXISTS (SELECT 1 FROM issues child WHERE child.parent_id = issues.id))')
+    end
+  end
+
+  describe '#sql_for_tree_child_tracker_id_field' do
+    it 'selects roots with matching child trackers and single matching issues' do
+      expect(query.sql_for_tree_child_tracker_id_field('tree_child_tracker_id', '=', ['5']))
+        .to eq('issues.root_id IN (SELECT DISTINCT parent.root_id FROM issues parent WHERE EXISTS (SELECT 1 FROM issues child WHERE child.parent_id = parent.id AND child.tracker_id IN (5)) UNION SELECT DISTINCT issues.root_id FROM issues WHERE tracker_id IN (5) AND parent_id IS NULL AND NOT EXISTS (SELECT 1 FROM issues child WHERE child.parent_id = issues.id))')
     end
   end
 
@@ -228,12 +269,12 @@ RSpec.describe IssueQuery do
 
     it 'matches explicitly listed child statuses' do
       expect(query.sql_for_tree_child_status_id_field('tree_child_status_id', '=', ['3']))
-        .to eq('issues.root_id IN (SELECT DISTINCT parent.root_id FROM issues parent WHERE EXISTS (SELECT 1 FROM issues child WHERE child.parent_id = parent.id AND child.status_id IN (3)))')
+        .to eq('issues.root_id IN (SELECT DISTINCT parent.root_id FROM issues parent WHERE EXISTS (SELECT 1 FROM issues child WHERE child.parent_id = parent.id AND child.status_id IN (3)) UNION SELECT DISTINCT issues.root_id FROM issues WHERE status_id IN (3) AND parent_id IS NULL AND NOT EXISTS (SELECT 1 FROM issues child WHERE child.parent_id = issues.id))')
     end
 
     it 'matches open child statuses' do
       expect(query.sql_for_tree_child_status_id_field('tree_child_status_id', 'o', []))
-        .to eq('issues.root_id IN (SELECT DISTINCT parent.root_id FROM issues parent WHERE EXISTS (SELECT 1 FROM issues child WHERE child.parent_id = parent.id AND child.status_id IN (SELECT id FROM issue_statuses WHERE is_closed=FALSE)))')
+        .to eq('issues.root_id IN (SELECT DISTINCT parent.root_id FROM issues parent WHERE EXISTS (SELECT 1 FROM issues child WHERE child.parent_id = parent.id AND child.status_id IN (SELECT id FROM issue_statuses WHERE is_closed=FALSE)) UNION SELECT DISTINCT issues.root_id FROM issues WHERE status_id IN (SELECT id FROM issue_statuses WHERE is_closed=FALSE) AND parent_id IS NULL AND NOT EXISTS (SELECT 1 FROM issues child WHERE child.parent_id = issues.id))')
     end
   end
 end

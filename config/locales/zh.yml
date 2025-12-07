@@ -6,7 +6,8 @@ zh:
   label_filter_parent_tracker_id: 父票据追踪
   label_filter_a_parent_status_id: 父（任何）状态
   label_filter_a_parent_tracker_id: 父（任何）跟踪器
-  label_filter_tree_tracker_id: 树：跟踪器（自身或上级）
+  label_filter_tree_tracker_id: 树：跟踪器
+  label_filter_tree_status_id: 树：状态
   label_filter_tree_has_parent_or_child: 树：具有父或子
   label_filter_tree_parent_status_id: 树：父状态
   label_filter_tree_parent_tracker_id: 树：父跟踪器
@@ -25,7 +26,8 @@ zh:
   label_enable_child_tracker_id_filter: 启用子跟踪器过滤器
   label_enable_child_status_id_filter: 启用子状态过滤器
   label_enable_tree_has_parent_or_child_filter: 启用树级父或子过滤器
-  label_enable_tree_tracker_id_filter: 启用树级跟踪器（自身或上级）过滤器
+  label_enable_tree_tracker_id_filter: 启用树级跟踪器过滤器
+  label_enable_tree_status_id_filter: 启用树级状态过滤器
   label_enable_tree_parent_tracker_id_filter: 启用树级父跟踪器过滤器
   label_enable_tree_parent_status_id_filter: 启用树级父状态过滤器
   label_enable_tree_child_tracker_id_filter: 启用树级子跟踪器过滤器
