@@ -53,7 +53,7 @@ jobs:
       # point at other code, a SHA cannot. The trailing comment is the version, kept
       # in step with the pin by Dependabot (see .github/dependabot.yml).
       - name: Check out the plugin
-        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       # Not a `services:` block. GitHub cannot start a service container
       # conditionally, so declaring all three meant every job pulled all three
