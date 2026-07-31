@@ -1,0 +1,93 @@
+name: Bug report
+description: A filter returns the wrong issues, or something breaks
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        The filters compile to SQL that differs per Redmine version and per database
+        engine, so the version details below are usually what makes a report
+        reproducible. Everything else is guesswork without them.
+
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What you filtered on, and what came back instead of what you expected.
+      placeholder: |
+        Filtered on Subtasks: Status is Closed. Expected the two epics that have a
+        closed subtask; got every issue in the project.
+    validations:
+      required: true
+
+  - type: input
+    id: versions
+    attributes:
+      label: Redmine, Rails, Ruby and plugin version
+      description: The four lines at the top of Administration → Information, plus the plugin version from Administration → Plugins.
+      placeholder: Redmine 6.1.2, Rails 7.2.3, Ruby 3.3.6, plugin 1.0.0
+    validations:
+      required: true
+
+  - type: dropdown
+    id: database
+    attributes:
+      label: Database
+      options:
+        - PostgreSQL
+        - MySQL
+        - MariaDB
+        - other (say which below)
+    validations:
+      required: true
+
+  - type: input
+    id: db_version
+    attributes:
+      label: Database version
+      placeholder: PostgreSQL 16.2
+    validations:
+      required: true
+
+  - type: textarea
+    id: query
+    attributes:
+      label: The query
+      description: |
+        The part of the url after `/issues?`, or the filter rows as you set them.
+        This is the fastest way to reproduce exactly what you saw.
+      render: text
+
+  - type: textarea
+    id: plan
+    attributes:
+      label: Query plan (optional, for anything slow)
+      description: |
+        For a report about speed rather than about wrong results. In a Rails console:
+
+        ```ruby
+        q = IssueQuery.find(<saved query id>)   # or build it with add_filter
+        puts ActiveRecord::Base.connection.select_all("EXPLAIN #{q.issues.to_sql}").rows.join("\n")
+        ```
+
+        Replace project names and subjects if any of it is confidential — the shape
+        of the plan is what matters, not the data.
+      render: text
+
+  - type: textarea
+    id: visibility
+    attributes:
+      label: Permissions, if the wrong rows might be a visibility question
+      description: |
+        Whether the user is an administrator, whether the issues involved sit in
+        different projects, and whether any of them is private. The hierarchy
+        filters only answer about issues the user may see, so a "missing" issue is
+        sometimes the correct answer.
+
+  - type: checkboxes
+    id: checked
+    attributes:
+      label: Before reporting
+      options:
+        - label: I checked whether the same query works with the filters this plugin adds switched off in Administration → Plugins
+        - label: I read the "Filter semantics" section of the readme, in particular what "is not", "any" and "none" mean here

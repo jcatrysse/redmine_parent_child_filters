@@ -1,0 +1,106 @@
+name: Specs
+
+# Reusable: one place that knows how to test the plugin. The per version
+# workflows call it, so adding a Redmine release means adding a caller rather
+# than copying a hundred lines of setup. The steps themselves live in .codex/ so
+# that CI and a laptop run exactly the same thing.
+on:
+  workflow_call:
+    inputs:
+      redmine:
+        description: Redmine branch to test against
+        required: true
+        type: string
+      ruby:
+        description: Ruby version the branch accepts
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  specs:
+    name: ${{ inputs.redmine }} / ${{ matrix.db }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    strategy:
+      fail-fast: false
+      matrix:
+        # The plugin emits different SQL per engine (ILIKE against LIKE, ~*
+        # against REGEXP), so the engine axis is not optional. MySQL and MariaDB
+        # are listed separately because they are not interchangeable here: REGEXP
+        # case sensitivity follows the collation and the two ship different
+        # defaults, which is exactly what the mention filter leans on.
+        db: [postgresql, mysql, mariadb]
+
+    env:
+      PCF_DB: ${{ matrix.db }}
+      PCF_PROVISION_DB: '0'
+      PCF_DB_HOST: 127.0.0.1
+      PCF_DB_NAME: redmine_test
+      # Throwaway credentials for a throwaway container; start_database.sh reads
+      # the same variables, so the two cannot disagree. Not secrets, and nothing
+      # they reach outlives the job.
+      PCF_DB_USER: redmine
+      PCF_DB_PASSWORD: redmine
+      # The runner has its own Ruby; never let the scripts reach for another one.
+      PCF_RUBY: ${{ inputs.ruby }}
+
+    steps:
+      # Actions are pinned to a commit SHA rather than a tag: a tag can be moved to
+      # point at other code, a SHA cannot. The trailing comment is the version, kept
+      # in step with the pin by Dependabot (see .github/dependabot.yml).
+      - name: Check out the plugin
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+
+      # Not a `services:` block. GitHub cannot start a service container
+      # conditionally, so declaring all three meant every job pulled all three
+      # images — and a MariaDB job failed when Docker Hub timed out on the
+      # PostgreSQL image it was never going to use. One job, one database.
+      - name: Start ${{ matrix.db }}
+        run: ./.codex/start_database.sh ${{ matrix.db }}
+
+      - name: Install client libraries
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential libpq-dev default-libmysqlclient-dev rsync
+
+      - name: Check out Redmine ${{ inputs.redmine }} and install the plugin
+        run: ./.codex/redmine_clone.sh ${{ inputs.redmine }}
+
+      - name: Set up Ruby ${{ inputs.ruby }}
+        uses: ruby/setup-ruby@95ef2b042f9d7a56d8268cba8559e2842e2ad01b # v1.321.0
+        with:
+          ruby-version: ${{ inputs.ruby }}
+          # test_setup.sh owns `bundle install` so that CI and a laptop install
+          # the same way. The cache below covers what bundler-cache would.
+          bundler-cache: false
+
+      - name: Cache gems
+        uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25 # v5
+        with:
+          path: redmine/vendor/bundle
+          key: >-
+            gems-${{ runner.os }}-${{ inputs.redmine }}-${{ inputs.ruby }}-${{ matrix.db }}-${{
+              hashFiles('redmine/Gemfile', 'Gemfile') }}
+          restore-keys: |
+            gems-${{ runner.os }}-${{ inputs.redmine }}-${{ inputs.ruby }}-${{ matrix.db }}-
+
+      - name: Install gems and migrate
+        run: ./.codex/test_setup.sh
+
+      - name: Run the specs
+        run: ./.codex/test_plugin.sh
+
+      # upload-artifact jumps to v6 while the others stay on v5: v5 of this one
+      # still targets Node 20, so it would not have stopped the deprecation
+      # warning. All three inputs used here are unchanged in v6.
+      - name: Publish the test report
+        if: always()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        with:
+          name: rspec-${{ inputs.redmine }}-${{ matrix.db }}
+          path: redmine/tmp/test-results/*.xml
+          if-no-files-found: warn

@@ -1,39 +1,32 @@
-zh:
-  label_filter_group_parent_child: 父与子
-  label_filter_child_status_id: 子状态
-  label_filter_child_tracker_id: 子票据追踪
-  label_filter_parent_status_id: 父状态
-  label_filter_parent_tracker_id: 父票据追踪
-  label_filter_a_parent_status_id: 父（任何）状态
-  label_filter_a_parent_tracker_id: 父（任何）跟踪器
-  label_filter_tree_tracker_id: 树：跟踪器
-  label_filter_tree_status_id: 树：状态
-  label_filter_tree_has_parent_or_child: 树：具有父或子
-  label_filter_tree_parent_status_id: 树：父状态
-  label_filter_tree_parent_tracker_id: 树：父跟踪器
-  label_filter_tree_child_status_id: 树：子状态
-  label_filter_tree_child_tracker_id: 树：子跟踪器
-  label_filter_root: 根票据
-  label_filter_root_status_id: 根票据状态
-  label_filter_root_tracker_id: 根票据追踪
-  label_enable_root_id_filter: 启用根过滤器
-  label_enable_root_tracker_id_filter: 启用根跟踪器过滤器
-  label_enable_root_status_id_filter: 启用根状态过滤器
-  label_enable_parent_tracker_id_filter: 启用父跟踪器过滤器
-  label_enable_parent_status_id_filter: 启用育儿状态过滤器
-  label_enable_a_parent_tracker_id_filter: 启用父跟踪器过滤器（全部）
-  label_enable_a_parent_status_id_filter: 启用父状态过滤器（全部）
-  label_enable_child_tracker_id_filter: 启用子跟踪器过滤器
-  label_enable_child_status_id_filter: 启用子状态过滤器
-  label_enable_tree_has_parent_or_child_filter: 启用树级父或子过滤器
-  label_enable_tree_tracker_id_filter: 启用树级跟踪器过滤器
-  label_enable_tree_status_id_filter: 启用树级状态过滤器
-  label_enable_tree_parent_tracker_id_filter: 启用树级父跟踪器过滤器
-  label_enable_tree_parent_status_id_filter: 启用树级父状态过滤器
-  label_enable_tree_child_tracker_id_filter: 启用树级子跟踪器过滤器
-  label_enable_tree_child_status_id_filter: 启用树级子状态过滤器
-  label_min_depth: 过滤器最小深度
-  label_max_depth: 过滤器最大深度
-  label_general_filters_settings: 一般过滤器设置
-  label_tree_filters_settings: 树过滤器设置
-  label_specific_filters_settings: 特定父级过滤器和深度设置
+"zh":
+  label_filter_group_parent_child: "父与子"
+  label_filter_root_id: "根"
+  label_filter_root_tracker_id: "根：跟踪"
+  label_filter_root_status_id: "根：状态"
+  label_filter_parent_tracker_id: "父任务：跟踪"
+  label_filter_parent_status_id: "父任务：状态"
+  label_filter_a_parent_tracker_id: "父任务 (全部)：跟踪"
+  label_filter_a_parent_status_id: "父任务 (全部)：状态"
+  label_filter_a_specific_parent_tracker_id: "父任务 (层级)：跟踪"
+  label_filter_a_specific_parent_status_id: "父任务 (层级)：状态"
+  label_filter_child_tracker_id: "子任务：跟踪"
+  label_filter_child_status_id: "子任务：状态"
+  label_filter_a_child_tracker_id: "子任务 (全部)：跟踪"
+  label_filter_a_child_status_id: "子任务 (全部)：状态"
+  label_filter_tree_has_parent_or_child: "有父任务或子任务"
+  label_filter_tree_tracker_id: "树：跟踪"
+  label_filter_tree_status_id: "树：状态"
+  label_filter_tree_parent_tracker_id: "树 / 父任务：跟踪"
+  label_filter_tree_parent_status_id: "树 / 父任务：状态"
+  label_filter_tree_child_tracker_id: "树 / 子任务：跟踪"
+  label_filter_tree_child_status_id: "树 / 子任务：状态"
+  label_filter_involved_id: "指派给、作者或关注者"
+  label_filter_mentioned_id: "被提及或被链接"
+  label_filter_involved_or_mentioned_id: "指派给、作者、关注者、被提及或被链接"
+  label_general_filters_settings: "常规过滤器"
+  label_tree_filters_settings: "树过滤器"
+  label_involvement_filters_settings: "人员过滤器"
+  label_specific_filters_settings: "按层级的父任务与深度"
+  label_min_depth: "过滤器最小深度"
+  label_max_depth: "过滤器最大深度"
+  text_mention_filters_cost: "提及过滤器会搜索描述和注释，因此比其他过滤器慢。"
