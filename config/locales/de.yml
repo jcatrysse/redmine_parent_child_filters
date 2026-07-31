@@ -1,40 +1,32 @@
-de:
-  label_filter_group_parent_child: Eltern und Kind
-  label_filter_child_status_id: Status des Kindes
-  label_filter_child_tracker_id: Verfolgung des Kindes
-  label_filter_parent_status_id: Status der Eltern
-  label_filter_parent_tracker_id: Verfolgung der Eltern
-  label_filter_a_parent_status_id: Status der Eltern (jeder)
-  label_filter_a_parent_tracker_id: Verfolgung der Eltern (jeder)
+"de":
+  label_filter_group_parent_child: "Über- und untergeordnet"
+  label_filter_root_id: "Wurzel"
+  label_filter_root_tracker_id: "Wurzel: Tracker"
+  label_filter_root_status_id: "Wurzel: Status"
+  label_filter_parent_tracker_id: "Übergeordnetes Ticket: Tracker"
+  label_filter_parent_status_id: "Übergeordnetes Ticket: Status"
+  label_filter_a_parent_tracker_id: "Übergeordnetes Ticket (alle): Tracker"
+  label_filter_a_parent_status_id: "Übergeordnetes Ticket (alle): Status"
+  label_filter_a_specific_parent_tracker_id: "Übergeordnetes Ticket (Ebene): Tracker"
+  label_filter_a_specific_parent_status_id: "Übergeordnetes Ticket (Ebene): Status"
+  label_filter_child_tracker_id: "Untergeordnete Tickets: Tracker"
+  label_filter_child_status_id: "Untergeordnete Tickets: Status"
+  label_filter_a_child_tracker_id: "Untergeordnete Tickets (alle): Tracker"
+  label_filter_a_child_status_id: "Untergeordnete Tickets (alle): Status"
+  label_filter_tree_has_parent_or_child: "Hat ein übergeordnetes Ticket oder ein Unterticket"
   label_filter_tree_tracker_id: "Baum: Tracker"
   label_filter_tree_status_id: "Baum: Status"
-  label_filter_tree_has_parent_or_child: "Baum: hat Eltern oder Kind"
-  label_filter_tree_parent_status_id: "Baum: Elternstatus"
-  label_filter_tree_parent_tracker_id: "Baum: Eltern-Tracker"
-  label_filter_tree_child_status_id: "Baum: Kinderstatus"
-  label_filter_tree_child_tracker_id: "Baum: Kinder-Tracker"
-  label_filter_root: Hauptticket
-  label_filter_root_status_id: Status des Haupttickets
-  label_filter_root_tracker_id: Verfolgung des Haupttickets
-  label_enable_root_id_filter: Haupttickets Filter aktivieren
-  label_enable_root_tracker_id_filter: Haupttickets Trackerfilter aktivieren
-  label_enable_root_status_id_filter: Haupttickets Statusfilter aktivieren
-  label_enable_parent_tracker_id_filter: Eltern Trackerfilter aktivieren
-  label_enable_parent_status_id_filter: Eltern Statusfilter aktivieren
-  label_enable_a_parent_tracker_id_filter: Eltern Trackerfilter aktivieren (alle)
-  label_enable_a_parent_status_id_filter: Eltern Statusfilter aktivieren (alle)
-  label_enable_child_tracker_id_filter: Kindes Trackerfilter aktivieren
-  label_enable_child_status_id_filter: Kindes Statusfilter aktivieren
-  label_enable_tree_has_parent_or_child_filter: Baumfilter für Eltern oder Kind aktivieren
-  label_enable_tree_tracker_id_filter: Baum-Tracker-Filter aktivieren
-  label_enable_tree_status_id_filter: Baum-Status-Filter aktivieren
-  label_enable_tree_parent_tracker_id_filter: Baumfilter für Eltern-Tracker aktivieren
-  label_enable_tree_parent_status_id_filter: Baumfilter für Elternstatus aktivieren
-  label_enable_tree_child_tracker_id_filter: Baumfilter für Kinder-Tracker aktivieren
-  label_enable_tree_child_status_id_filter: Baumfilter für Kinderstatus aktivieren
-  label_min_depth: Minimale Filtertiefe
-  label_max_depth: Maximale Filtertiefe
-  label_general_filters_settings: Allgemeine Filtereinstellungen
-  label_tree_filters_settings: Baumfilter-Einstellungen
-  label_specific_filters_settings: Spezifische Elternfilter- & Tiefeneinstellungen
-
+  label_filter_tree_parent_tracker_id: "Baum / Übergeordnetes Ticket: Tracker"
+  label_filter_tree_parent_status_id: "Baum / Übergeordnetes Ticket: Status"
+  label_filter_tree_child_tracker_id: "Baum / Untergeordnete Tickets: Tracker"
+  label_filter_tree_child_status_id: "Baum / Untergeordnete Tickets: Status"
+  label_filter_involved_id: "Bearbeiter, Autor oder Beobachter"
+  label_filter_mentioned_id: "Erwähnt"
+  label_filter_involved_or_mentioned_id: "Bearbeiter, Autor, Beobachter oder erwähnt"
+  label_general_filters_settings: "Allgemeine Filter"
+  label_tree_filters_settings: "Baumfilter"
+  label_involvement_filters_settings: "Personenfilter"
+  label_specific_filters_settings: "Übergeordnetes Ticket je Ebene, und Tiefe"
+  label_min_depth: "Minimale Filtertiefe"
+  label_max_depth: "Maximale Filtertiefe"
+  text_mention_filters_cost: "Die Erwähnungsfilter durchsuchen Beschreibungen und Notizen und sind daher langsamer als die anderen Filter."

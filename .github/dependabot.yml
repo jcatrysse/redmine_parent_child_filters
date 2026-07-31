@@ -1,0 +1,20 @@
+version: 2
+
+# The workflows pin every action to a commit SHA, which is the point: a moved tag
+# cannot change what CI runs. That only works if something bumps the pins, so this
+# is the other half of it. Dependabot rewrites the SHA and the version comment
+# together, so the comment never drifts from the pin.
+#
+# Gems are not listed. Redmine ships no lockfile and resolves the bundle itself, so
+# there is nothing here for Dependabot to bump — the plugin's own Gemfile holds two
+# test gems and no version constraints.
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    open-pull-requests-limit: 3
+    commit-message:
+      prefix: ci
+    labels:
+      - dependencies

@@ -1,0 +1,69 @@
+name: Weekly
+
+# The per version workflows only fire on a push, so they test the Redmine tip as
+# it was when the plugin last changed. Redmine keeps releasing patch versions on
+# every stable branch, and redmine_clone.sh always clones the branch tip, so this
+# re-runs the whole matrix weekly against whatever those branches have become.
+# A Redmine security release that breaks a filter shows up here rather than in a
+# bug report.
+#
+# Nothing here is allowed to fail quietly. GitHub mails the repository owner when
+# a scheduled workflow fails, which is the notification; a `continue-on-error`
+# trunk job would have kept the run green and told nobody.
+on:
+  schedule:
+    - cron: '17 4 * * 1'
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  r50:
+    name: 5.0
+    uses: ./.github/workflows/specs.yml
+    with:
+      redmine: 5.0-stable
+      ruby: '3.1'
+
+  r51:
+    name: 5.1
+    uses: ./.github/workflows/specs.yml
+    with:
+      redmine: 5.1-stable
+      ruby: '3.2'
+
+  r60:
+    name: 6.0
+    uses: ./.github/workflows/specs.yml
+    with:
+      redmine: 6.0-stable
+      ruby: '3.3'
+
+  r61:
+    name: 6.1
+    uses: ./.github/workflows/specs.yml
+    with:
+      redmine: 6.1-stable
+      ruby: '3.4'
+
+  r70:
+    name: 7.0
+    uses: ./.github/workflows/specs.yml
+    with:
+      redmine: 7.0-stable
+      ruby: '3.4'
+
+  # Early warning for what the next release will contain. It fails like the rest:
+  # a broken trunk is exactly the thing worth an email while it is still cheap to
+  # fix, and a red weekly run blocks no pull request.
+  trunk:
+    name: trunk
+    uses: ./.github/workflows/specs.yml
+    with:
+      redmine: master
+      ruby: '3.4'

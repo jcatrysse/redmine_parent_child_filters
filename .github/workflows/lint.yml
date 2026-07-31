@@ -1,0 +1,99 @@
+name: Lint
+
+# Cheap checks that need no database and no Redmine checkout, so they finish
+# long before the spec matrix does.
+on:
+  push:
+    branches: ['**']
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  rubocop:
+    name: RuboCop
+    runs-on: ubuntu-latest
+    if: >-
+      github.event_name != 'pull_request' ||
+      github.event.pull_request.head.repo.full_name != github.repository
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+
+      - uses: ruby/setup-ruby@95ef2b042f9d7a56d8268cba8559e2842e2ad01b # v1.321.0
+        with:
+          ruby-version: '3.4'
+          bundler-cache: false
+
+      - name: Install RuboCop
+        # Pinned: a new minor enables new cops, which would turn a green
+        # pipeline red without anyone touching the code.
+        run: gem install --no-document rubocop -v 1.88.2
+
+      - name: Run RuboCop
+        run: rubocop --format github --format progress
+
+  shellcheck:
+    name: ShellCheck
+    runs-on: ubuntu-latest
+    if: >-
+      github.event_name != 'pull_request' ||
+      github.event.pull_request.head.repo.full_name != github.repository
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+
+      - name: Run ShellCheck
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y shellcheck
+          shellcheck --external-sources .codex/*.sh
+
+      # ShellCheck reads syntax, not behaviour. It had nothing to say about a
+      # helper that returned 1 in one of its four modes and so killed the
+      # documented local test entry point under `set -e`, silently. These checks
+      # run the helpers and look at what they return.
+      - name: Test the .codex helpers
+        run: ./.codex/test_scripts.sh
+
+  yaml:
+    name: Locales parse
+    runs-on: ubuntu-latest
+    if: >-
+      github.event_name != 'pull_request' ||
+      github.event.pull_request.head.repo.full_name != github.repository
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+
+      - uses: ruby/setup-ruby@95ef2b042f9d7a56d8268cba8559e2842e2ad01b # v1.321.0
+        with:
+          ruby-version: '3.4'
+          bundler-cache: false
+
+      # Redmine loads these with Psych, and Psych reads a bare `no:` key as the
+      # boolean false. Parsing every file here catches a mis-quoted locale
+      # without waiting for the whole spec matrix.
+      - name: Parse every locale file
+        run: |
+          ruby -ryaml -e '
+            failed = false
+            Dir["config/locales/*.yml"].sort.each do |path|
+              data = YAML.safe_load(File.read(path))
+              key  = data && data.keys.first
+              if !data.is_a?(Hash) || data.size != 1 || !key.is_a?(String)
+                warn "#{path}: expected exactly one string locale key, got #{data.inspect[0, 80]}"
+                failed = true
+                next
+              end
+              expected = File.basename(path, ".yml")
+              if key != expected
+                warn "#{path}: locale key is #{key.inspect}, expected #{expected.inspect}"
+                failed = true
+              end
+            end
+            exit(failed ? 1 : 0)
+          '

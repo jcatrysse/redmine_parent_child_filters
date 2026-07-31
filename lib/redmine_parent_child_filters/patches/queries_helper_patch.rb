@@ -1,57 +1,51 @@
-# This patch can be ommited, it only makes the new filters available in a group, as opposed to ungrouped.
+# frozen_string_literal: true
+
+# Groups the filters added by this plugin under a dedicated optgroup in the
+# "Add filter" dropdown.
+#
+# Redmine's own filters_options_for_select is reused as-is: the plugin's filters
+# are hidden from it and the resulting optgroup is appended afterwards. That way
+# upstream changes to the grouping of core filters keep working, and disabling
+# this patch only costs the grouping, never the filters themselves.
 
 require_dependency 'queries_helper'
+
 module RedmineParentChildFilters
   module Patches
     module QueriesHelperPatch
       module InstanceMethods
+        # The hierarchy filters, taken from the query patch so that the list
+        # cannot drift: a filter added there is grouped here automatically. Read
+        # lazily rather than at load time so this file does not care which patch
+        # init.rb requires first.
+        #
+        # The people filters (involved / mentioned) are deliberately absent: they
+        # are not about the issue hierarchy, so Redmine groups them with the
+        # other person filters where users already look for them.
+        def pcf_grouped_filters
+          RedmineParentChildFilters::Patches::IssueQueryPatch::InstanceMethods::FILTER_ORDER
+        end
+
         def filters_options_for_select(query)
-          new_filters = %w[root_id root_tracker_id root_status_id parent_id parent_tracker_id parent_status_id a_parent_tracker_id a_parent_status_id a_specific_parent_tracker_id a_specific_parent_status_id child_id child_tracker_id child_status_id tree_has_parent_or_child tree_tracker_id tree_status_id tree_parent_tracker_id tree_parent_status_id tree_child_tracker_id tree_child_status_id]
-          new_group = :label_filter_group_parent_child
-          ungrouped = []
-          grouped = {}
-          query.available_filters.map do |field, field_options|
-            if new_filters.include?(field)
-              group = new_group
-            elsif field_options[:type] == :relation
-              group = :label_relations
-            elsif field_options[:type] == :tree
-              group = query.is_a?(IssueQuery) ? :label_relations : nil
-            elsif /^cf_\d+\./.match?(field)
-              group = (field_options[:through] || field_options[:field]).try(:name)
-            elsif field =~ /^(.+)\./
-              # association filters
-              group = "field_#{$1}".to_sym
-            elsif %w(member_of_group assigned_to_role).include?(field)
-              group = :field_assigned_to
-            elsif field_options[:type] == :date_past || field_options[:type] == :date
-              group = :label_date
-            elsif %w(estimated_hours spent_time).include?(field)
-              group = :label_time_tracking
-            end
-            if group
-              (grouped[group] ||= []) << [field_options[:name], field]
-            else
-              ungrouped << [field_options[:name], field]
-            end
+          available_filters = query.available_filters
+          plugin_filters = pcf_grouped_filters & available_filters.keys
+          return super if plugin_filters.empty?
+
+          begin
+            query.instance_variable_set(:@available_filters, available_filters.except(*plugin_filters))
+            options = super
+          ensure
+            query.instance_variable_set(:@available_filters, available_filters)
           end
-          # Don't group dates if there's only one (eg. time entries filters)
-          if grouped[:label_date].try(:size) == 1
-            ungrouped << grouped.delete(:label_date).first
-          end
-          s = options_for_select([[]] + ungrouped)
-          if grouped.present?
-            localized_grouped = grouped.map {|k, v| [k.is_a?(Symbol) ? l(k) : k.to_s, v]}
-            s << grouped_options_for_select(localized_grouped)
-          end
-          s
+
+          options + grouped_options_for_select(
+            [[l(:label_filter_group_parent_child),
+              plugin_filters.map { |field| [available_filters[field][:name], field] }]]
+          )
         end
       end
     end
   end
 end
 
-QueriesHelper.include IssuesHelper
 QueriesHelper.prepend(RedmineParentChildFilters::Patches::QueriesHelperPatch::InstanceMethods)
-ActionView::Base.prepend QueriesHelper
-IssuesController.prepend QueriesHelper
