@@ -87,9 +87,10 @@ def validate_dataset!
   return if scope.count.zero?
 
   quoted = Issue.table_name
+  subject_pattern = Issue.connection.quote('pcf bench %')
   mismatched = Issue.connection.select_value(<<~SQL.squish).to_i
     SELECT COUNT(*) FROM #{quoted} c INNER JOIN #{quoted} p ON c.parent_id = p.id
-    WHERE c.root_id <> p.root_id
+    WHERE c.subject LIKE #{subject_pattern} AND c.root_id <> p.root_id
   SQL
   orphaned = scope.where(:root_id => nil).count
   roots = scope.where(:parent_id => nil).count
@@ -197,10 +198,38 @@ def build_dataset
   puts "issues: #{Issue.count}, journals: #{Journal.count}"
 end
 
+# The project filters read journal_details, which the journals above leave empty.
+# One detail per benchmark journal: every tenth a move between two benchmark
+# projects, the rest a status change, so the filters have to find the moves among
+# many details rather than in a table holding nothing else.
+#
+# Separate from build_dataset, and idempotent, so a dataset left behind by an
+# earlier version of this script gets its details too.
+def build_journal_details!
+  journal_ids = Journal.joins(:issue).where("#{Issue.table_name}.subject LIKE 'pcf bench %'").order(:id).pluck(:id)
+  return if journal_ids.empty?
+  return if JournalDetail.where(:journal_id => journal_ids.first(1_000), :prop_key => 'project_id').exists?
+
+  projects = Project.where("identifier LIKE 'pcf-bench-%'").order(:id).pluck(:id)
+  statuses = IssueStatus.sorted.pluck(:id)
+  puts "building #{journal_ids.size} journal details, a tenth of them project moves..."
+
+  rows = journal_ids.each_with_index.map do |journal_id, i|
+    if (i % 10).zero?
+      {:journal_id => journal_id, :property => 'attr', :prop_key => 'project_id',
+       :old_value => projects[i % projects.size].to_s, :value => projects[(i + 1) % projects.size].to_s}
+    else
+      {:journal_id => journal_id, :property => 'attr', :prop_key => 'status_id',
+       :old_value => statuses[i % statuses.size].to_s, :value => statuses[(i + 1) % statuses.size].to_s}
+    end
+  end
+  rows.each_slice(5_000) { |slice| JournalDetail.insert_all(slice) }
+end
+
 def analyze!
   case ActiveRecord::Base.connection.adapter_name
-  when /postg/i then Issue.connection.execute('ANALYZE issues; ANALYZE journals; ANALYZE projects')
-  else Issue.connection.execute('ANALYZE TABLE issues, journals, projects')
+  when /postg/i then Issue.connection.execute('ANALYZE issues; ANALYZE journals; ANALYZE journal_details; ANALYZE projects')
+  else Issue.connection.execute('ANALYZE TABLE issues, journals, journal_details, projects')
   end
 end
 
@@ -216,6 +245,7 @@ def cases
   closed = IssueStatus.where(:is_closed => true).first || IssueStatus.sorted.last
   tracker = Tracker.first
   me = User.where(:admin => true).first || User.first
+  bench_project = Project.where("identifier LIKE 'pcf-bench-%'").order(:id).first || Project.first
 
   [
     ['child_status_id',              {'child_status_id' => ['=', [closed.id.to_s]]}],
@@ -232,8 +262,17 @@ def cases
     ['tree_parent_tracker_id',       {'tree_parent_tracker_id' => ['=', [tracker.id.to_s]]}],
     ['tree_child_tracker_id',        {'tree_child_tracker_id' => ['=', [tracker.id.to_s]]}],
     ['involved_id',                  {'involved_id' => ['=', [me.id.to_s]]}],
-    ['mentioned_id',                 {'mentioned_id' => ['=', [me.id.to_s]]}]
-  ]
+    ['mentioned_id',                 {'mentioned_id' => ['=', [me.id.to_s]]}],
+    ['first_project_id',             {'first_project_id' => ['=', [bench_project.id.to_s]]}],
+    ['first_project_id !',           {'first_project_id' => ['!', [bench_project.id.to_s]]}]
+  ] + project_history_cases(bench_project)
+end
+
+# Redmine 5.0 has no history operators, so there is nothing to time there.
+def project_history_cases(project)
+  return [] unless Query.operators_by_filter_type.key?(:list_with_history)
+
+  [['project_history_id ev', {'project_history_id' => ['ev', [project.id.to_s]]}]]
 end
 
 # The Rails query cache is on inside `rails runner`, which makes a second
@@ -253,8 +292,14 @@ def timed(query)
   end
 end
 
+# The plan of the statement that timed measures. issue_count is base_scope.count,
+# on every Redmine from 5.0 to 7.0, so this explains exactly that COUNT(*).
+#
+# This used to read query.issues.to_sql, but IssueQuery#issues returns an Array,
+# so every plan in the file was "EXPLAIN failed: NoMethodError" and nobody noticed
+# because the rescue below turned it into text.
 def explain(query)
-  sql = query.issues.to_sql
+  sql = query.base_scope.select('COUNT(*)').to_sql
   verb = ActiveRecord::Base.connection.adapter_name.match?(/postg/i) ? 'EXPLAIN ANALYZE' : 'EXPLAIN'
   rows = Issue.connection.select_all("#{verb} #{sql}").rows
   rows.map { |row| row.join(' | ') }.join("\n")
@@ -266,7 +311,8 @@ end
 def index_report
   wanted = {
     'issues' => [%w[parent_id], %w[root_id lft rgt], %w[tracker_id], %w[status_id], %w[project_id]],
-    'journals' => [%w[journalized_id journalized_type]]
+    'journals' => [%w[journalized_id journalized_type]],
+    'journal_details' => [%w[journal_id]]
   }
 
   heading 'Indexes the filters rely on'
@@ -343,6 +389,8 @@ def dataset_report
   puts format('  %-22s %d', 'projects', Project.count)
   puts format('  %-22s %d', 'non public projects', Project.where(:is_public => false).count)
   puts format('  %-22s %d', 'journals', Journal.count)
+  puts format('  %-22s %d', 'journal details', JournalDetail.count)
+  puts format('  %-22s %d', 'project moves', JournalDetail.where(:property => 'attr', :prop_key => 'project_id').count)
 end
 
 def main
@@ -350,6 +398,7 @@ def main
   User.current = User.where(:admin => true).first || User.first
   abort 'no user to run as; migrate the database first' unless User.current
   build_dataset if Issue.where("subject LIKE 'pcf bench %'").count < ISSUES
+  build_journal_details!
 
   # Always, whether the rows were just built or left over from an earlier run.
   validate_dataset!

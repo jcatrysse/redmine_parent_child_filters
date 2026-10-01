@@ -48,6 +48,40 @@ RSpec.describe 'plugin settings' do
     expect(IssueQuery.new.available_filters.keys).not_to include('tree_tracker_id')
   end
 
+  # Redmine does not merge plugin defaults into stored settings, so an instance
+  # that saved its settings before a release added a key has no such key at all.
+  # Read as off, every filter a release adds would be switched off on upgrade.
+  describe 'a key the stored settings do not have yet' do
+    let(:new_keys) { %w[enable_first_project_id_filter enable_project_history_id_filter journal_subtask_moves min_depth max_depth] }
+
+    before do
+      Setting.plugin_redmine_parent_child_filters = Setting.plugin_redmine_parent_child_filters.except(*new_keys)
+    end
+
+    it 'falls back to the default in the query' do
+      expect(Setting.plugin_redmine_parent_child_filters.keys & new_keys).to eq([])
+      expect(IssueQuery.new.available_filters.keys).to include('first_project_id', 'project_history_id')
+      expect(RedmineParentChildFilters.journal_subtask_moves?).to be(true)
+      expect(RedmineParentChildFilters.depth_range).to eq(1..5)
+    end
+
+    it 'falls back to the default on the settings page' do
+      body = settings_page
+
+      %w[enable_first_project_id_filter journal_subtask_moves].each do |key|
+        expect(body[/<input[^>]*id="settings_#{key}"[^>]*>/]).to include('checked'), key
+      end
+      expect(body[%r{<select[^>]*id="settings_max_depth".*?</select>}m]).to include('<option selected="selected" value="5">')
+    end
+
+    it 'still honours a key stored as 0' do
+      Setting.plugin_redmine_parent_child_filters =
+        Setting.plugin_redmine_parent_child_filters.merge('journal_subtask_moves' => '0')
+
+      expect(RedmineParentChildFilters.journal_subtask_moves?).to be(false)
+    end
+  end
+
   it 'does not define a helper method on the view class' do
     settings_page
 
@@ -141,9 +175,10 @@ RSpec.describe 'plugin settings' do
     it 'groups the checkboxes with a legend a screen reader can announce' do
       body = settings_page
 
-      expect(body.scan(/<fieldset[^>]*class="box tabular settings"/).size).to eq(4)
+      expect(body.scan(/<fieldset[^>]*class="box tabular settings"/).size).to eq(5)
       expect(body.scan(%r{<legend>([^<]+)</legend>}).flatten)
-        .to include(I18n.t(:label_general_filters_settings), I18n.t(:label_tree_filters_settings))
+        .to include(I18n.t(:label_general_filters_settings), I18n.t(:label_tree_filters_settings),
+                    I18n.t(:label_project_plural))
     end
 
     # A long translation must not be truncated or lost. German is among the longest

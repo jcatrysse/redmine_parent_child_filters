@@ -1,11 +1,13 @@
 # Redmine Parent Child Filters Plugin
 
-Advanced issue filters for Redmine, in two families:
+Advanced issue filters for Redmine, in three families:
 
 * **hierarchy** — filter on the `tracker` and `status` of an issue's parents, children,
   ancestors, descendants, root or whole tree;
 * **people** — filter on who is involved (assignee, author or watcher) or who is
-  referred to, as `@login` or as `user#176`, in one filter row rather than one per role.
+  referred to, as `@login` or as `user#176`, in one filter row rather than one per role;
+* **project history** — filter on the projects an issue has been in, and on the one
+  it was created in.
 
 No database migration, no patched Redmine core files.
 
@@ -125,6 +127,22 @@ why some locales legitimately contain English words.
     Redmine records mentions but does not store them, so this searches the text. See
     *Mention filtering and performance* below before enabling it on a large instance.
 
+* **Project History Filtering**: Find issues by the projects they have been in, not
+  only by the one they are in now. Both read the moves Redmine records in the issue
+  history, and both are available inside a project as well, where Redmine offers no
+  project filter at all.
+    * `project_history_id` (**Project (History)**): Redmine's own `has been`,
+      `has never been` and `changed from` operators, which Redmine already offers
+      on tracker, priority, assignee and version but not on the project. **is** and
+      **is not** mean the current project, as on Redmine's project filter.
+    * `first_project_id` (**Project (Original)**): the project an issue was created
+      in, wherever it is now. *"Every issue ever created in project A"* is
+      `Project (Original) is A`.
+
+    Redmine moves the subtasks of a moved issue without a journal entry, so the
+    plugin writes one for them, which is what lets both filters trace a subtask
+    too. See *Project history* below for what the history can and cannot tell.
+
 * **Additional Operators**: Enhance your filtering capabilities with additional operators.
     * Operator **is not** on date filters. Redmine attaches operators to a filter
       *type* rather than to a filter, so this reaches every filter it types as `date`:
@@ -136,6 +154,7 @@ why some locales legitimately contain English words.
 
 * **Settings**: The plugin provides a dedicated Settings menu where
     * Each filter can be enabled or disabled as per your requirements.
+    * The journaling of subtasks moved along with their parent can be switched off.
     * Additionally, you can configure the depth settings for depth-based filters.
 
     Level **1 is the direct parent**, 2 its parent, and so on. The two depth settings
@@ -193,6 +212,56 @@ so the OR has to live inside a single filter; this is the same shape Redmine its
 uses for its watcher filter. "is not" negates the whole group, so it means
 *not involved in any of those roles*, and unassigned issues are kept.
 
+## Project history
+
+Redmine writes a journal entry when an issue moves to another project, and both
+project filters read only those entries. No column holds the original project.
+
+**The original project** is where the oldest recorded move started, in the order
+the issue history shows it: by date, then by entry. An issue that never moved is
+still where it was created. Every issue has exactly one original project, so
+**is not** simply selects all the others.
+
+**Subtasks that move along with their parent get a journal entry of their own.**
+When an issue moves, Redmine moves its subtasks in the same project along with it,
+but saves them without a journal entry, so their history does not show the move and
+nothing records where they came from. Redmine's own `has been` has the same blind
+spot. The plugin closes it: such a move is journaled on the subtask, by the user
+who moved the parent, at every level below. It is the only thing the plugin writes.
+
+* The entry is what a move by hand would record: the project, and anything the
+  move changed with it, such as a version not shared with the new project.
+* It sends **no notification**: the parent's move already did, and a mail per
+  subtask would be noise. Everything else a journal does still happens; Redmine
+  may add the mover as a watcher of the subtask, depending on their preferences.
+* Only the move Redmine itself makes is journaled, and only when the parent's own
+  move is: a script that moves the parent silently moves its subtasks silently, so
+  the two histories never disagree. A subtask that already carries a journal is
+  left alone, so nothing is journaled twice.
+* It is switched on by default and can be switched off in the settings, under
+  *Projects*.
+
+**It does not repair the past.** Subtasks moved before the plugin journaled these
+moves, or while it was switched off, have no entry. Nothing in the database says
+where they came from, so both filters read them as having always been where they
+are now. `spec/core_contract_spec.rb` pins Redmine's behaviour, so a release that
+starts journaling these moves itself will be noticed; the plugin then does nothing,
+since the subtask already carries a journal.
+
+Moves made outside Redmine are not traced either: a direct `UPDATE`, or a plugin
+or script that changes `project_id` without a journal. A copied issue is a new
+issue, created in the target project, and its original project is that target.
+
+**Only the moves you may see count**, as for Redmine's history operators. Redmine
+keeps moves out of private journals, but a journal can be made private
+afterwards. Its move then counts only for users allowed to see private notes. For
+everyone else the issue reads as created where its next visible move started, or
+where it is now. The answer never depends on a move you cannot see in the history.
+
+The project list is Redmine's own, with `<< my projects >>` and `<< my bookmarks >>`.
+Archived projects are not listed, as on Redmine's project filter, so an issue that
+came from an archived project cannot be selected through the interface.
+
 ## Performance
 
 The hierarchy filters compile to a correlated `EXISTS` (or a `UNION` of two, for the
@@ -237,6 +306,27 @@ matched: it forces the prefilter from `LIKE '%user#%'` to `LIKE '%user%'`.
 Each figure is the median of five runs, not a single measurement: on the heavier tree
 filters one run varied by half from the next on the same code, which is more than the
 differences anyone should be drawing conclusions from.
+
+**The project history filters cost what Redmine's own history operators cost**, and
+for the same reason: both look up each issue's journals and their details through
+`journals(journalized_id)` and `journal_details(journal_id)`. Measured on
+PostgreSQL 16 against 20 000 issues, 100 000 journals and as many details, 10 000
+of them project moves, as the median of five runs:
+
+| filter | alone | with a tracker filter |
+|---|---|---|
+| Redmine's `status has been` (reference) | 187 ms | 64 ms |
+| `project_history_id` has been | 189 ms | 84 ms |
+| `first_project_id` is | 252 ms | 118 ms |
+| `first_project_id` is not | 231 ms | 83 ms |
+
+These are with PostgreSQL's JIT compiler off. With it on, the default, the planner's
+cost estimate for the correlated subqueries crosses `jit_above_cost` and the first
+call pays for compiling them: 816 ms for `first_project_id` alone, of which about
+580 ms is compilation, and 288 ms for Redmine's own `status has been`. Adding any
+filter that narrows the issues lowers the estimate and the cost alike. The cost
+grows with the number of issues left to check, not with the size of the history, so
+the lever is the same as everywhere else: scope the query.
 
 **The structural tree filters are the expensive ones**, and knowing why matters more
 than the numbers. *Has a parent or a child*, and the *tree* variants of the
@@ -418,12 +508,26 @@ Don't forget to restart your Redmine afterward!
 * Restart Redmine for the changes to take effect.
 
 There is nothing else to undo: the plugin ships no migration, adds no column, no
-index and no table, and stores nothing outside its own row in `settings`. Removing
+index and no table, and stores nothing outside its own row in `settings`. The only
+rows it writes are the journal entries for subtasks moved along with their parent
+(see *Project history*). They are ordinary Redmine journal entries and stay in the
+issue history after an uninstall, as any other change would. Removing
 the folder and restarting is a complete rollback, at any version, with no downtime
 beyond the restart.
 
 Saved queries that used a filter from this plugin keep their stored filter, which
 Redmine then ignores as unknown. Re-installing the plugin brings them back.
+
+## Upgrading to 1.1.0
+
+Replace the folder and restart; there is no migration. Two things change for an
+existing instance:
+
+* The two project filters appear, and are on, even where the plugin settings were
+  saved before they existed.
+* From then on, subtasks that Redmine moves along with their parent get a journal
+  entry, without a notification. Switch it off under *Projects* in the settings
+  if that is not wanted. Earlier moves are not repaired.
 
 ## Upgrading from a version before 1.0.0
 

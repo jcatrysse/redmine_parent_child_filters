@@ -4,7 +4,7 @@ require_relative 'spec_helper'
 
 # add_available_filter replaces whatever sits under the name it is given. If a
 # future Redmine, or another plugin, ships a filter called child_status_id, this
-# plugin must step aside rather than change what that filter means. All 23
+# plugin must step aside rather than change what that filter means. All 25
 # filters go through one registration path so none of them can forget to.
 RSpec.describe 'filter registration' do
   # Every filter this plugin adds, discovered by switching them all off.
@@ -17,8 +17,8 @@ RSpec.describe 'filter registration' do
     IssueQuery.new.available_filters.keys - without
   end
 
-  it 'registers 23 filters, hierarchy and people alike' do
-    expect(plugin_filters.size).to eq(23)
+  it 'registers 25 filters, hierarchy, people and project history alike' do
+    expect(plugin_filters.size).to eq(25)
     expect(plugin_filters).to include('child_status_id', 'involved_id', 'mentioned_id')
   end
 

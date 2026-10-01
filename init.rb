@@ -3,8 +3,8 @@
 Redmine::Plugin.register :redmine_parent_child_filters do
   name 'Redmine Parent Child Filters Plugin'
   author 'Jan Catrysse'
-  description 'Filter issues by their parent, child and tree relationships, and by who is involved in or mentioned on them'
-  version '1.0.0'
+  description 'Filter issues by their parent, child and tree relationships, by who is involved in or mentioned on them, and by the projects they have been in'
+  version '1.1.0'
   url 'https://github.com/jcatrysse/redmine_parent_child_filters'
   author_url 'https://github.com/jcatrysse'
 
@@ -34,6 +34,9 @@ Redmine::Plugin.register :redmine_parent_child_filters do
     'enable_involved_id_filter' => true,
     'enable_mentioned_id_filter' => true,
     'enable_involved_or_mentioned_id_filter' => true,
+    'enable_project_history_id_filter' => true,
+    'enable_first_project_id_filter' => true,
+    'journal_subtask_moves' => true,
     'min_depth' => '1',
     'max_depth' => '5'
   }, partial: 'settings/parent_child_filters_settings'
@@ -44,5 +47,7 @@ require File.dirname(__FILE__) + '/lib/redmine_parent_child_filters/patches/issu
 require File.dirname(__FILE__) + '/lib/redmine_parent_child_filters/patches/principal_filter_support'
 require File.dirname(__FILE__) + '/lib/redmine_parent_child_filters/patches/involvement_filter_patch'
 require File.dirname(__FILE__) + '/lib/redmine_parent_child_filters/patches/mention_filter_patch'
+require File.dirname(__FILE__) + '/lib/redmine_parent_child_filters/patches/project_history_filter_patch'
+require File.dirname(__FILE__) + '/lib/redmine_parent_child_filters/patches/subtask_move_journal_patch'
 require File.dirname(__FILE__) + '/lib/redmine_parent_child_filters/patches/queries_helper_patch'
 require File.dirname(__FILE__) + '/lib/redmine_parent_child_filters/patches/query_include'

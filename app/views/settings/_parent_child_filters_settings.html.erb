@@ -5,8 +5,13 @@
     content_tag :p do
       # The checkbox carries the same label as the filter it enables, so the
       # settings page and the filter dropdown cannot disagree. enable_<x>_filter
-      # maps to label_filter_<x>.
-      filter = setting_key.delete_prefix('enable_').delete_suffix('_filter')
+      # maps to label_filter_<x>; a setting that enables no filter has
+      # label_<setting> instead.
+      label = if setting_key.start_with?('enable_')
+                "label_filter_#{setting_key.delete_prefix('enable_').delete_suffix('_filter')}"
+              else
+                "label_#{setting_key}"
+              end
       # check_box_tag derives its id from the name, so the label must point at
       # "settings_<key>" for clicking it to toggle the box.
       #
@@ -14,9 +19,13 @@
       # nothing at all for an unticked box, so without it "off" would be stored as
       # the absence of a key rather than as a value, and the two would have to be
       # told apart everywhere. With it the stored value is always 0 or 1.
-      label_tag("settings_#{setting_key}", l("label_filter_#{filter}")) +
+      #
+      # The state comes from RedmineParentChildFilters.setting, which falls back
+      # to the default for a key saved settings do not have yet, so the box shows
+      # what the plugin actually does.
+      label_tag("settings_#{setting_key}", l(label)) +
         hidden_field_tag("settings[#{setting_key}]", 0, :id => nil) +
-        check_box_tag("settings[#{setting_key}]", 1, RedmineParentChildFilters.enabled?(@settings[setting_key]))
+        check_box_tag("settings[#{setting_key}]", 1, RedmineParentChildFilters.enabled?(RedmineParentChildFilters.setting(setting_key)))
     end
   end
 %>
@@ -55,6 +64,14 @@
 </fieldset>
 
 <fieldset class="box tabular settings">
+  <%# Redmine's own word, so the legend needs no translation of its own. %>
+  <legend><%= l(:label_project_plural) %></legend>
+  <%= check_box.call('enable_project_history_id_filter') %>
+  <%= check_box.call('enable_first_project_id_filter') %>
+  <%= check_box.call('journal_subtask_moves') %>
+</fieldset>
+
+<fieldset class="box tabular settings">
   <legend><%= l(:label_specific_filters_settings) %></legend>
   <%= check_box.call('enable_a_specific_parent_tracker_id_filter') %>
   <%= check_box.call('enable_a_specific_parent_status_id_filter') %>
@@ -70,11 +87,11 @@
   %>
   <p>
     <%= label_tag 'settings_min_depth', l('label_min_depth') %>
-    <%= select_tag 'settings[min_depth]', options_for_select(depths, @settings['min_depth'].to_i) %>
+    <%= select_tag 'settings[min_depth]', options_for_select(depths, RedmineParentChildFilters.setting('min_depth').to_i) %>
   </p>
   <p>
     <%= label_tag 'settings_max_depth', l('label_max_depth') %>
-    <%= select_tag 'settings[max_depth]', options_for_select(depths, @settings['max_depth'].to_i) %>
+    <%= select_tag 'settings[max_depth]', options_for_select(depths, RedmineParentChildFilters.setting('max_depth').to_i) %>
     <%#
       What a level means, and what the filters will actually use after the stored
       values have been normalised. Both are composed from numbers and Redmine's own

@@ -121,6 +121,67 @@ RSpec.describe 'what the plugin assumes about Redmine' do
       expect(condition).to be_a(String)
       expect(condition).to include(Journal.table_name)
     end
+
+    # The first project filter rewrites journals to an alias and leaves projects
+    # pointing at the outer issue's project, as core's history operators do.
+    it 'mentions no table but journals and projects' do
+      [User.find(1), User.find(2), User.anonymous].each do |user|
+        condition = Journal.visible_notes_condition(user, :skip_pre_condition => true)
+        tables = condition.scan(/\b([a-z_]+)\./).flatten.uniq
+
+        expect(tables - [Journal.table_name, Project.table_name, 'em']).to eq([]), "#{user.login}: #{tables.inspect}"
+      end
+    end
+  end
+
+  describe 'the project history' do
+    # Both project filters read moves from the journal; an issue that is moved
+    # without one would read as never having moved.
+    it 'journals project_id' do
+      expect(Issue.new.journalized_attribute_names).to include('project_id')
+    end
+
+    # Redmine moves subtasks along with their parent in after_project_change,
+    # through child.send(:project=, project, true) and child.save, without a
+    # journal. The plugin hooks exactly that project= call to give the subtask
+    # one. Asserted with the plugin's journaling switched off: if a Redmine starts
+    # journaling these moves itself, this fails, and the patch (which then does
+    # nothing, since the subtask already carries a journal) can be retired.
+    it 'moves subtasks along with their parent without a journal of its own' do
+      previous = Setting.plugin_redmine_parent_child_filters
+      Setting.plugin_redmine_parent_child_filters = previous.merge('journal_subtask_moves' => '0')
+      from, to = %w[pcf-contract-from pcf-contract-to].map do |identifier|
+        project = Project.create!(:name => identifier, :identifier => identifier, :is_public => true)
+        project.trackers = Tracker.all
+        project.enabled_module_names = ['issue_tracking']
+        project
+      end
+      parent = create_issue(project: from)
+      child = create_issue(project: from, parent: parent)
+
+      parent = Issue.find(parent.id)
+      parent.init_journal(User.find(1))
+      parent.project = to
+      parent.save!
+
+      expect(child.reload.project_id).to eq(to.id)
+      expect(JournalDetail.joins(:journal)
+                          .where(:journals => {:journalized_type => 'Issue', :journalized_id => child.id},
+                                 :property => 'attr', :prop_key => 'project_id')).to be_empty
+    ensure
+      Setting.plugin_redmine_parent_child_filters = previous
+    end
+
+    it 'keeps after_project_change private, and project= taking keep_tracker' do
+      expect(Issue.private_method_defined?(:after_project_change)).to be(true)
+      expect(Issue.instance_method(:project=).super_method.arity).to eq(-2)
+    end
+
+    # If core starts offering history on its own project filter, the plugin's
+    # project_history_id becomes a duplicate and should be retired.
+    it 'still offers only is and is not on the core project filter' do
+      expect(IssueQuery.new.available_filters['project_id'][:type]).to eq(:list)
+    end
   end
 
   describe 'Active Record sanitisation' do

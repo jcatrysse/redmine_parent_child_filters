@@ -21,7 +21,28 @@ module RedmineParentChildFilters
   end
 
   def self.filter_enabled?(key)
-    enabled?(Setting.plugin_redmine_parent_child_filters[key])
+    enabled?(setting(key))
+  end
+
+  # Whether subtasks that Redmine moves along with their parent get a journal of
+  # their own. See patches/subtask_move_journal_patch.rb.
+  def self.journal_subtask_moves?
+    enabled?(setting('journal_subtask_moves'))
+  end
+
+  # A stored setting, or the plugin default when the stored hash has no such key.
+  #
+  # Redmine does not merge plugin defaults into stored settings: once the settings
+  # form has been saved, Setting.plugin_<id> is the stored hash and nothing else.
+  # A key added by a later release is therefore absent rather than off, and read
+  # as off it would switch every new filter off on every instance that ever
+  # saved its settings. The form posts an explicit 0 for every unticked box, so
+  # an absent key can only mean "saved before this setting existed".
+  def self.setting(key)
+    stored = Setting.plugin_redmine_parent_child_filters
+    return stored[key] if stored.respond_to?(:key?) && stored.key?(key)
+
+    Redmine::Plugin.find(:redmine_parent_child_filters).settings[:default][key]
   end
 
   # Logs a message the first time it is asked, and never again for the same key.
@@ -46,9 +67,8 @@ module RedmineParentChildFilters
   # or absurd. Rather than trust the form to have prevented that, the values are
   # normalised here, in the one place both the form and the query read.
   def self.depth_range
-    settings = Setting.plugin_redmine_parent_child_filters
-    min = clamp_depth(settings['min_depth'])
-    max = clamp_depth(settings['max_depth'])
+    min = clamp_depth(setting('min_depth'))
+    max = clamp_depth(setting('max_depth'))
 
     # A reversed pair is a mistake, not a request for an empty range: honour the
     # minimum the administrator picked and widen the maximum to match.

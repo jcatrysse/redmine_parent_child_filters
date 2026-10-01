@@ -1,5 +1,40 @@
 # CHANGELOG
 
+## 1.1.0
+
+Adds filtering on project history. No migration; upgrading is replacing the folder
+and restarting.
+
+### Added
+* **`project_history_id`, *Project (History)*.** Redmine's own `has been`,
+  `has never been` and `changed from` operators on the project, which Redmine
+  offers on tracker, priority, assignee and version but not on the project. It is
+  core's SQL, under a filter of its own; core's project filter is unchanged.
+  On Redmine 5.0, which has no history operators, it offers **is** and **is not**.
+* **`first_project_id`, *Project (Original)*.** The project an issue was created
+  in, read from the oldest move in its history, or the current project for an
+  issue that never moved. Answers *"every issue ever created in project A"*.
+* Both are available inside a project too, and can be switched off in the
+  settings, under a new *Projects* section.
+* **Subtasks moved along with their parent get a journal entry.** Redmine moves
+  them without one, so their history did not show the move and neither these
+  filters nor Redmine's own `has been` could tell where they came from. The entry
+  is written by the user who moved the parent, sends no notification, and is only
+  written when the parent's own move is journaled. On by default, under the new
+  `journal_subtask_moves` setting. It does not repair moves made before it. This
+  is the first thing the plugin writes; see *Project history* in the readme.
+* The benchmark seeds journal details, a tenth of them project moves, and times
+  both filters.
+
+### Fixed
+* **A setting added by a release no longer reads as off on an upgraded instance.**
+  Redmine does not merge plugin defaults into stored settings, so on an instance
+  whose plugin settings had been saved once, every filter added later was switched
+  off, its checkbox unticked, and a missing depth read as level 1. An absent key now
+  falls back to the plugin default, in the query and on the settings page alike.
+* The benchmark wrote "EXPLAIN failed" instead of a query plan for every filter.
+  It now explains the `COUNT(*)` it times.
+
 ## 1.0.0
 
 First release considered ready for production, and the first that starts on
