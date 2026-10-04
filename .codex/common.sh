@@ -108,12 +108,22 @@ pcf_checkout_exclude() {
 # Sets PCF_RSPEC_TARGETS from test_plugin.sh's arguments. Paths under spec/ are
 # relative to the plugin. Without any path, options alone (a seed, a filter)
 # still run the whole suite: rspec given only options would look for ./spec in
-# the Redmine checkout and run nothing.
+# the Redmine checkout and run nothing. The value of an option that takes one
+# (`-e spec/foo`, `--out tmp/x_spec.rb`) is passed on as is, never as a path.
 pcf_rspec_targets() {
-  local arg has_path=0
+  local arg has_path=0 value_next=0
   PCF_RSPEC_TARGETS=()
   for arg in "$@"; do
+    if [ "$value_next" = 1 ]; then
+      PCF_RSPEC_TARGETS+=("$arg")
+      value_next=0
+      continue
+    fi
     case "$arg" in
+      -I|-r|--require|-O|--options|--order|--seed|--failure-exit-code|--error-exit-code|\
+      --drb-port|-f|--format|-o|--out|--deprecation-out|-P|--pattern|--exclude-pattern|\
+      -e|--example|-E|--example-matches|-t|--tag|--default-path)
+        PCF_RSPEC_TARGETS+=("$arg"); value_next=1 ;;
       -*) PCF_RSPEC_TARGETS+=("$arg") ;;
       spec|spec/*) PCF_RSPEC_TARGETS+=("plugins/$PLUGIN_NAME/$arg"); has_path=1 ;;
       *_spec.rb|*_spec.rb:*|*/spec|*/spec/*) PCF_RSPEC_TARGETS+=("$arg"); has_path=1 ;;

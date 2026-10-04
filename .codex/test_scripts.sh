@@ -163,6 +163,10 @@ expect_output 'options only'      "--seed|3|$spec|" targets --seed 3
 expect_output 'filter only'       "-e|a b|$spec|" targets -e 'a b'
 expect_output 'file and filter'   "$spec/x_spec.rb|-e|a b|" targets spec/x_spec.rb -e 'a b'
 expect_output 'file with a line'  "$spec/x_spec.rb:12|" targets spec/x_spec.rb:12
+expect_output 'filter like a path' "-e|spec/foo|$spec|" targets -e spec/foo
+expect_output 'output like a spec' "--format|json|--out|tmp/x_spec.rb|$spec|" \
+  targets --format json --out tmp/x_spec.rb
+expect_output 'option with ='     "--seed=3|$spec|" targets --seed=3
 
 # rsync matches an exclude relative to the source, so an absolute REDMINE_DIR
 # inside the plugin used to be copied into itself on every run.
