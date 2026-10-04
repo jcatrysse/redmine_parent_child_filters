@@ -39,9 +39,11 @@ fi
 # checkout. The Redmine directory itself is excluded in case it sits inside the
 # plugin, and so is the plugin's own git metadata.
 mkdir -p "$REDMINE_DIR/plugins/$PLUGIN_NAME"
-rsync -a --delete \
-  --exclude "/$REDMINE_DIR/" \
-  --exclude '/.git/' \
-  "$PLUGIN_ROOT/" "$REDMINE_DIR/plugins/$PLUGIN_NAME/"
+excludes=(--exclude '/.git/')
+checkout_exclude="$(pcf_checkout_exclude)"
+if [ -n "$checkout_exclude" ]; then
+  excludes+=(--exclude "$checkout_exclude")
+fi
+rsync -a --delete "${excludes[@]}" "$PLUGIN_ROOT/" "$REDMINE_DIR/plugins/$PLUGIN_NAME/"
 
 echo "Installed $PLUGIN_NAME into $REDMINE_DIR at $REDMINE_VERSION"

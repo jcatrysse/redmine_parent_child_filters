@@ -5,6 +5,7 @@
 #
 #   ./.codex/test_plugin.sh
 #   ./.codex/test_plugin.sh spec/mention_filter_spec.rb -e 'word boundaries'
+#   ./.codex/test_plugin.sh --seed 1234
 #
 # Environment:
 #   REDMINE_DIR   checkout to run in (default: redmine)
@@ -30,18 +31,7 @@ export RAILS_ENV=test
 
 # Arguments are relative to the plugin, so ./.codex/test_plugin.sh spec/foo_spec.rb
 # works the same way it would from the plugin directory.
-targets=()
-if [ "$#" -eq 0 ]; then
-  targets=("$SPEC_ROOT")
-else
-  for arg in "$@"; do
-    case "$arg" in
-      -*) targets+=("$arg") ;;
-      spec/*) targets+=("plugins/$PLUGIN_NAME/$arg") ;;
-      *) targets+=("$arg") ;;
-    esac
-  done
-fi
+pcf_rspec_targets "$@"
 
 PCF_JUNIT="${PCF_JUNIT:-$([ "${CI:-}" = "true" ] && echo 1 || echo 0)}"
 formatters=(--format progress)
@@ -50,4 +40,4 @@ if [ "$PCF_JUNIT" = 1 ]; then
   formatters+=(--format RspecJunitFormatter --out "tmp/test-results/rspec-$PLUGIN_NAME.xml")
 fi
 
-run bundle exec rspec "${targets[@]}" "${formatters[@]}"
+run bundle exec rspec "${PCF_RSPEC_TARGETS[@]}" "${formatters[@]}"

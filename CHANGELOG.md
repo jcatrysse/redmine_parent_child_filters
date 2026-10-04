@@ -1,5 +1,15 @@
 # CHANGELOG
 
+## Unreleased
+
+### Fixed
+* `.codex` scripts: the Ruby version now respects the Gemfile's lower bound. The
+  bound was never read from a real Gemfile line.
+* `redmine_clone.sh` no longer copies the checkout into itself when `REDMINE_DIR`
+  is an absolute path inside the plugin.
+* `test_plugin.sh` with only options (`--seed 3`, `-e name`) runs the plugin's
+  specs again instead of none, and a run with 0 examples now fails.
+
 ## 1.1.0
 
 Adds filtering on project history. No migration; upgrading is replacing the folder

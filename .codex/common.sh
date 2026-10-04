@@ -39,7 +39,7 @@ pcf_detect_ruby_version() {
   line="$(grep -E "^[[:space:]]*ruby[[:space:]]" "$gemfile" | head -n 1 || true)"
   [ -n "$line" ] || return 0
 
-  lower="$(printf '%s' "$line" | sed -E -n "s/.*>=[[:space:]]*['\"]([0-9]+\.[0-9]+).*/\1/p")"
+  lower="$(printf '%s' "$line" | sed -E -n "s/.*>=[[:space:]]*['\"]?([0-9]+\.[0-9]+).*/\1/p")"
   upper="$(printf '%s' "$line" | sed -E -n "s/.*<[[:space:]]*['\"]?([0-9]+)\.([0-9]+).*/\1.\2/p")"
 
   if [ -n "$upper" ]; then
@@ -89,6 +89,38 @@ pcf_select_ruby() {
   # benchmark.sh before they ran anything — silently, with no output at all. It
   # only happened where mise is installed, which is why CI never saw it, and
   # ShellCheck does not look at function exit status.
+  return 0
+}
+
+# Prints the rsync exclude for the Redmine checkout when it sits inside the
+# plugin, and nothing otherwise. rsync matches an exclude against the path
+# relative to the source, so an absolute REDMINE_DIR has to be made relative to
+# the plugin first: excluding "/$REDMINE_DIR/" as given never matches one.
+pcf_checkout_exclude() {
+  local abs
+  abs="$(cd "$REDMINE_DIR" 2>/dev/null && pwd)" || return 0
+  case "$abs" in
+    "$PLUGIN_ROOT"/*) printf '/%s/\n' "${abs#"$PLUGIN_ROOT"/}" ;;
+  esac
+  return 0
+}
+
+# Sets PCF_RSPEC_TARGETS from test_plugin.sh's arguments. Paths under spec/ are
+# relative to the plugin. Without any path, options alone (a seed, a filter)
+# still run the whole suite: rspec given only options would look for ./spec in
+# the Redmine checkout and run nothing.
+pcf_rspec_targets() {
+  local arg has_path=0
+  PCF_RSPEC_TARGETS=()
+  for arg in "$@"; do
+    case "$arg" in
+      -*) PCF_RSPEC_TARGETS+=("$arg") ;;
+      spec|spec/*) PCF_RSPEC_TARGETS+=("plugins/$PLUGIN_NAME/$arg"); has_path=1 ;;
+      *_spec.rb|*_spec.rb:*|*/spec|*/spec/*) PCF_RSPEC_TARGETS+=("$arg"); has_path=1 ;;
+      *) PCF_RSPEC_TARGETS+=("$arg") ;;
+    esac
+  done
+  [ "$has_path" = 1 ] || PCF_RSPEC_TARGETS+=("plugins/$PLUGIN_NAME/spec")
   return 0
 }
 

@@ -126,6 +126,8 @@ end
 
 RSpec.configure do |config|
   config.expect_with(:rspec) { |c| c.syntax = :expect }
+  # A typo in a path or filter must not pass as a green run.
+  config.fail_if_no_examples = true
   config.include PcfSpecHelpers
 
   config.before(:suite) do
