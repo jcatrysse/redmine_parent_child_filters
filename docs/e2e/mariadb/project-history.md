@@ -1,6 +1,6 @@
 # project-history
 
-Run 2026-10-06T20:37:03.971Z against http://127.0.0.1:3000.
+Run 2026-10-06T20:56:53.489Z against http://127.0.0.1:3000.
 
 | screenshot | user | URL | shows |
 |---|---|---|---|
@@ -12,6 +12,6 @@ Run 2026-10-06T20:37:03.971Z against http://127.0.0.1:3000.
 | `project-history-original-global.png` | manager | `/issues?set_filter=1&sort=id&per_page=100&c%5B%5D=tracker&c%5B%5D=status&c%5B%5D=subject&c%5B%5D=project&f%5B%5D=&f%5B%5D=first_project_id&op%5Bfirst_project_id%5D=%3D&v%5Bfirst_project_id%5D%5B%5D=3` | All projects: Project (Original) is E2E history lists none of the moved issues (they started elsewhere). Result: no PCF issue. |
 | `project-history-original-not.png` | manager | `/issues?set_filter=1&sort=id&per_page=100&c%5B%5D=tracker&c%5B%5D=status&c%5B%5D=subject&c%5B%5D=project&f%5B%5D=&f%5B%5D=first_project_id&op%5Bfirst_project_id%5D=%21&v%5Bfirst_project_id%5D%5B%5D=1` | All projects: Project (Original) is not E2E project leaves the moved issues and the e2e-project issues out. Result: PCF Hidden child. |
 | `project-history-subtask-history.png` | manager | `/issues/22?tab=history` | The history of PCF Moved child shows "Project changed from E2E project to E2E history", by manager, written by the plugin. |
-| `project-history-original-unknown.png` | manager | `/projects/e2e-history/issues?set_filter=1&sort=id&per_page=100&c%5B%5D=tracker&c%5B%5D=status&c%5B%5D=subject&c%5B%5D=project&f%5B%5D=&f%5B%5D=first_project_id&op%5Bfirst_project_id%5D=%3D&v%5Bfirst_project_id%5D%5B%5D=999999` | Failure path: Project (Original) is 999999 (no such project): no PCF issue, no error. Result: no PCF issue. |
-| `project-history-outsider-values.png` | outsider | `/projects/e2e-history/issues` | As outsider: the Project (Original) values do not include the private project (). |
-| `project-history-outsider-private-original.png` | outsider | `/issues?set_filter=1&sort=id&per_page=100&c%5B%5D=tracker&c%5B%5D=status&c%5B%5D=subject&c%5B%5D=project&f%5B%5D=&f%5B%5D=first_project_id&op%5Bfirst_project_id%5D=%3D&v%5Bfirst_project_id%5D%5B%5D=2` | As outsider: Project (Original) is the private project, typed into the URL: nothing from it is revealed. Result: no PCF issue. |
+| `project-history-original-unknown.png` | manager | `/projects/e2e-history/issues?set_filter=1&sort=id&per_page=100&c%5B%5D=tracker&c%5B%5D=status&c%5B%5D=subject&c%5B%5D=project&f%5B%5D=&f%5B%5D=first_project_id&op%5Bfirst_project_id%5D=%3D&v%5Bfirst_project_id%5D%5B%5D=999999` | Failure path: Project (Original) is 999999 (no such project): no PCF issue, no error. Result: no PCF issue. (The value box shows its first option: the value from the URL is not one of them.) |
+| `project-history-outsider-values.png` | outsider | `/projects/e2e-history/issues` | As outsider: the Project (Original) values do not include the private project (E2E history, E2E project). |
+| `project-history-outsider-private-original.png` | outsider | `/issues?set_filter=1&sort=id&per_page=100&c%5B%5D=tracker&c%5B%5D=status&c%5B%5D=subject&c%5B%5D=project&f%5B%5D=&f%5B%5D=first_project_id&op%5Bfirst_project_id%5D=%3D&v%5Bfirst_project_id%5D%5B%5D=2` | As outsider: Project (Original) is the private project, typed into the URL: nothing from it is revealed. Result: no PCF issue. (The value box shows its first option: the value from the URL is not one of them.) |

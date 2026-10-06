@@ -50,12 +50,15 @@ await t.shot('subtask-history', 'The history of PCF Moved child shows "Project c
 
 // Failure paths and permissions.
 await pcf.filtered(t, 'original-unknown', 'Failure path: Project (Original) is 999999 (no such project): no PCF issue, no error.',
-  H, [['first_project_id', '=', ['999999']]], { exact: [] });
+  H, [['first_project_id', '=', ['999999']]], { exact: [] }, { notAnOption: true });
 
 await t.login('outsider');
 await t.go(`/projects/${H}/issues`);
 await t.page.selectOption('#add_filter_select', 'first_project_id');
-const options = await t.page.locator('#tr_first_project_id select.value option').allInnerTexts();
+await t.page.waitForSelector('#tr_first_project_id select.value option', { state: 'attached', timeout: 10000 })
+  .catch(() => t.problems.push('picking Project (Original) added no row'));
+const options = await t.page.locator('#tr_first_project_id select.value option').evaluateAll(os => os.map(o => o.textContent.trim()));
+if (!options.some(o => o.includes('E2E project'))) t.problems.push(`outsider's values lack the public projects: ${options.join(', ')}`);
 if (options.some(o => o.includes('E2E private'))) t.problems.push('outsider is offered E2E private as an original project');
 // A <select> does not open in a screenshot, so show its options next to it.
 await t.page.evaluate(list => {
@@ -67,6 +70,6 @@ await t.page.evaluate(list => {
 await t.shot('outsider-values', `As outsider: the Project (Original) values do not include the private project (${options.map(o => o.trim()).join(', ')}).`, { full: false });
 
 await pcf.filtered(t, 'outsider-private-original', 'As outsider: Project (Original) is the private project, typed into the URL: nothing from it is revealed.',
-  null, [['first_project_id', '=', [ids['e2e-private']]]], { exact: [] });
+  null, [['first_project_id', '=', [ids['e2e-private']]]], { exact: [] }, { notAnOption: true });
 
 await t.done();

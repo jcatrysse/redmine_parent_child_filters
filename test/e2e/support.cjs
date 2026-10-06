@@ -45,7 +45,10 @@ async function expectSubjects(t, step, { include = [], exclude = [], exact } = {
 async function filtered(t, shot, caption, project, filters, expectation, opts = {}) {
   await t.go(filterPath(project, filters, opts), opts.go || {});
   const got = await expectSubjects(t, shot, expectation);
-  await t.shot(shot, `${caption} Result: ${got.length ? got.join(', ') : 'no PCF issue'}.`);
+  // A value from the URL that is not one of the options leaves the value box on its
+  // first option; say so, or the picture reads as a different filter.
+  const note = opts.notAnOption ? ' (The value box shows its first option: the value from the URL is not one of them.)' : '';
+  await t.shot(shot, `${caption} Result: ${got.length ? got.join(', ') : 'no PCF issue'}.${note}`);
   return got;
 }
 

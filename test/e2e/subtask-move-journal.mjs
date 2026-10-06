@@ -79,7 +79,7 @@ await t.shot('parent-history', `The parent's own move, journaled by Redmine as a
 
 // Switched off: the subtask moves without a journal, as in core Redmine.
 await setJournaling(false, 'journaling off');
-await t.shot('setting-off', 'Admin unticks "Record subtasks moved along with their parent in their history".', { full: false });
+await t.shot('setting-off', 'Admin unticks "Record subtasks moved along with their parent in their history" (Projects group).');
 await t.login('manager');
 const silentParent = await pcf.issueId(t, 'PCF Silent parent');
 const silentChild = await pcf.issueId(t, 'PCF Silent child');
@@ -93,7 +93,7 @@ await t.shot('silent-child-history', `Setting off: PCF Silent child moved along 
 
 await setJournaling(true, 'journaling on');
 if (!(await t.page.isChecked('#settings_journal_subtask_moves'))) t.problems.push('journaling not back on');
-await t.shot('setting-on', 'The journaling is switched back on (the default).', { full: false });
+await t.shot('setting-on', 'The journaling is switched back on (the default), Projects group.');
 
 // Failure path: a reporter may add notes but not edit or move issues, so the
 // form offers no project to move to.

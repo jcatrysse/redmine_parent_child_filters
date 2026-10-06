@@ -8,7 +8,21 @@ const GROUP = 'Parent and child';
 const t = await e2e('filter-group');
 
 async function groupOptions() {
-  return t.page.locator(`#add_filter_select optgroup[label="${GROUP}"] option`).allInnerTexts();
+  return t.page.locator(`#add_filter_select optgroup[label="${GROUP}"] option`).evaluateAll(os => os.map(o => o.textContent.trim()));
+}
+
+// Expand the list so the screenshot shows the group (a <select> does not open in a headless screenshot).
+async function showGroup() {
+  await t.page.evaluate(g => {
+    const sel = document.querySelector('#add_filter_select');
+    const og = sel && [...sel.querySelectorAll('optgroup')].find(o => o.label === g);
+    if (!og) return;
+    const box = document.createElement('div');
+    box.id = 'pcf-e2e-group';
+    box.style.cssText = 'border:2px solid #628db6;padding:6px;margin:6px 0;background:#fff';
+    box.innerHTML = '<strong>' + g + '</strong> (contents of the dropdown group): ' + [...og.children].map(o => o.textContent).join(' | ');
+    sel.parentNode.insertBefore(box, sel.nextSibling);
+  }, GROUP);
 }
 
 for (const user of ['manager', 'reporter', 'outsider']) {
@@ -20,22 +34,12 @@ for (const user of ['manager', 'reporter', 'outsider']) {
     if (!options.includes(label)) t.problems.push(`${user}: "${label}" missing from the group`);
   }
   // The people and project filters are not in the hierarchy group.
-  const all = await t.page.locator('#add_filter_select option').allInnerTexts();
+  const all = await t.page.locator('#add_filter_select option').evaluateAll(os => os.map(o => o.textContent.trim()));
   for (const label of ['Assignee, author or watcher', 'Mentioned or linked', 'Project (History)', 'Project (Original)']) {
     if (!all.includes(label)) t.problems.push(`${user}: "${label}" missing from the dropdown`);
     if (options.includes(label)) t.problems.push(`${user}: "${label}" is in the hierarchy group`);
   }
-  // Expand the list so the screenshot shows the group (a <select> does not open in a headless screenshot).
-  await t.page.evaluate(g => {
-    const sel = document.querySelector('#add_filter_select');
-    const og = sel && [...sel.querySelectorAll('optgroup')].find(o => o.label === g);
-    if (!og) return;
-    const box = document.createElement('div');
-    box.id = 'pcf-e2e-group';
-    box.style.cssText = 'border:2px solid #628db6;padding:6px;margin:6px 0;background:#fff';
-    box.innerHTML = '<strong>' + g + '</strong> (contents of the dropdown group): ' + [...og.children].map(o => o.textContent).join(' | ');
-    sel.parentNode.insertBefore(box, sel.nextSibling);
-  }, GROUP);
+  await showGroup();
   await t.shot(`dropdown-${user}`, `As ${user}: the "Add filter" dropdown carries the plugin's ${options.length} hierarchy filters in their own group "${GROUP}"; people and project filters are in Redmine's groups.`, { full: false });
 }
 
@@ -44,7 +48,7 @@ await t.login('manager');
 await t.go(`/projects/${P}/issues`);
 await t.page.selectOption('#add_filter_select', 'a_specific_parent_tracker_id');
 await t.page.waitForSelector('#tr_a_specific_parent_tracker_id', { timeout: 5000 }).catch(() => t.problems.push('picking the filter added no row'));
-const values = await t.page.locator('#tr_a_specific_parent_tracker_id select.value option').allInnerTexts();
+const values = await t.page.locator('#tr_a_specific_parent_tracker_id select.value option').evaluateAll(os => os.map(o => o.textContent.trim()));
 for (const v of ['(1) Bug', '(2) Feature', '(5) Support']) if (!values.includes(v)) t.problems.push(`depth values: "${v}" missing, got ${values.join(', ')}`);
 if (values.some(v => v.startsWith('(6)'))) t.problems.push('depth values go beyond the configured maximum of 5');
 await t.page.selectOption('#add_filter_select', 'root_id');
@@ -57,6 +61,7 @@ await t.anonymous();
 await t.go(`/projects/${P}/issues`);
 const anon = await groupOptions();
 if (anon.length !== 20) t.problems.push(`anonymous: ${anon.length} options in "${GROUP}", expected 20`);
+await showGroup();
 await t.shot('dropdown-anonymous', `Anonymous on a public project: the issue list renders with the plugin's group (${anon.length} filters).`, { full: false });
 
 // Failure path: the private project stays refused to a non-member, filters or not.

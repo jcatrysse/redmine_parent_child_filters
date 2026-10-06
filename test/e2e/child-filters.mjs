@@ -39,7 +39,7 @@ await pcf.filtered(t, 'child-tracker-reporter', 'As reporter (no access to e2e-p
 await pcf.filtered(t, 'child-any-reporter', 'As reporter: Subtasks: Status any leaves "PCF Parent of hidden" out.',
   P, [['child_status_id', '*']], { include: ['PCF Epic', 'PCF Story'], exclude: ['PCF Parent of hidden'] });
 
-await pcf.filtered(t, 'child-none-reporter', 'As reporter: Subtasks: Status none includes "PCF Parent of hidden": no subtask as far as the reporter can see.',
+await pcf.filtered(t, 'child-none-reporter', 'As reporter: Subtasks: Status none (operator !* from the URL; Redmine\'s status filter type does not offer "none" in the dropdown, so the operator box shows its first entry) includes "PCF Parent of hidden": no subtask as far as the reporter can see.',
   P, [['child_status_id', '!*']], { include: ['PCF Parent of hidden', 'PCF Standalone'], exclude: ['PCF Epic', 'PCF Story'] });
 
 // The hidden subtask must not leak through the list either.

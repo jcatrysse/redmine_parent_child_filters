@@ -26,7 +26,7 @@ await pcf.filtered(t, 'mentioned-manager-link', 'As manager: "Mentioned or linke
   P, [['mentioned_id', '=', [users.manager]]], { exact: ['PCF Mention'] });
 
 await pcf.filtered(t, 'mentioned-private-note-manager', 'As manager (may see private notes): "Mentioned or linked" is admin finds PCF Mention through the private note.',
-  P, [['mentioned_id', '=', [users.admin]]], { exact: ['PCF Mention'] });
+  P, [['mentioned_id', '=', [users.admin]]], { exact: ['PCF Mention'] }, { notAnOption: true });
 
 await pcf.filtered(t, 'involved-or-mentioned', 'As manager: "Assignee, author, watcher, mentioned or linked" is reporter: watched, mentioned and assigned issues together.',
   P, [['involved_or_mentioned_id', '=', [users.reporter]]], { include: ['PCF Watched', 'PCF Mention'], exclude: ['PCF Standalone', 'PCF Dated'] });
@@ -45,12 +45,12 @@ await pcf.filtered(t, 'involved-manager-as-reporter', 'As reporter (no "View wat
   P, [['involved_id', '=', [users.manager]]], { exclude: ['PCF Watched'] });
 
 await pcf.filtered(t, 'mentioned-private-note-reporter', 'As reporter (no "View private notes"): "Mentioned or linked" is admin finds nothing; the only mention is in a private note.',
-  P, [['mentioned_id', '=', [users.admin]]], { exact: [] });
+  P, [['mentioned_id', '=', [users.admin]]], { exact: [] }, { notAnOption: true });
 
 await pcf.filtered(t, 'mentioned-reporter-me', 'As reporter: "Mentioned or linked" is << me >>: the description mention is public, so reporter finds it.',
   P, [['mentioned_id', '=', ['me']]], { exact: ['PCF Mention'] });
 
 await pcf.filtered(t, 'mentioned-garbage', 'Failure path: "Mentioned or linked" with a value that is no user ("x\' OR 1=1"): the page answers normally, no PCF issue.',
-  P, [['mentioned_id', '=', ["x' OR 1=1"]]], { exact: [] });
+  P, [['mentioned_id', '=', ["x' OR 1=1"]]], { exact: [] }, { notAnOption: true });
 
 await t.done();

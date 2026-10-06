@@ -58,8 +58,19 @@ await t.login('manager');
 await t.go(`/projects/${P}/issues`);
 if (!(await dropdown()).includes('root_id')) t.problems.push('Root not back after ticking it again');
 await t.page.selectOption('#add_filter_select', 'a_specific_parent_tracker_id');
-const levels = await t.page.locator('#tr_a_specific_parent_tracker_id select.value option').allInnerTexts();
+await t.page.waitForSelector('#tr_a_specific_parent_tracker_id select.value option', { state: 'attached', timeout: 10000 })
+  .catch(() => t.problems.push('picking the level filter added no row'));
+await t.settle();
+const levels = await t.page.locator('#tr_a_specific_parent_tracker_id select.value option').evaluateAll(os => os.map(o => o.textContent.trim()));
+if (!levels.length) t.problems.push('the level filter offers no values');
 if (levels.some(l => !l.startsWith('(3)'))) t.problems.push(`depth values not limited to level 3: ${levels.join(', ')}`);
+// A <select> does not open in a screenshot, so show its options next to it.
+await t.page.evaluate(list => {
+  const box = document.createElement('div');
+  box.style.cssText = 'border:2px solid #628db6;padding:6px;margin:6px 0;background:#fff';
+  box.textContent = 'Values offered for Parent task (level): Tracker: ' + list.join(' | ');
+  document.querySelector('#content').prepend(box);
+}, levels);
 await t.shot('depth-values', `The level filter now offers level 3 only (${levels.join(', ')}); Root is back in the dropdown.`, { full: false });
 
 // Restore the defaults.

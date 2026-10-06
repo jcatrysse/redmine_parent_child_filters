@@ -125,7 +125,14 @@ RuboCop 1.88.2 (the lint workflow's version): no offenses. `.codex/test_scripts.
 | 5.1 | PostgreSQL | + ifv (master) (`docs/e2e/redmine51/`, tables only) | 15 | 116 | 0 |
 | 5.1, branch main (`docs/e2e/before/`) | PostgreSQL | + ifv (master) | 2 | 11 | 3, the two defects fixed here |
 
-Screenshots in `docs/e2e/`: the captions say what each proves (check of every picture against its caption: see below). Plain
+Screenshots in `docs/e2e/`: all 116 were opened and checked against their caption and user (by a
+review subagent, then the rejected ones by me). That check found five scenarios whose picture did not
+prove the caption (two option lists read as empty, so their assertions could not fail; two settings
+shots cut off the checkbox in question; one caption wrong about the documented standalone matches of
+the tree filters) and eight shots where a value from the URL is not one of the options, so the value
+box shows its first option. All fixed in the scenarios and run again from a fresh database on both
+engines; captions now say when the value box shows a fallback. The 5.1 tables in `docs/e2e/redmine51/`
+are from the scenarios before that fix. Plain
 PostgreSQL and MariaDB runs without the other plugins were green as well during the session (14
 scripts each, before `hidden-fields.mjs` existed). Migrations: the plugin has none; boot and eager
 load in production mode are exercised by every server start.
@@ -141,6 +148,14 @@ no findings.
   error.
 - redmine_issue_field_visibility hides fields per role; webhooks and the REST API of core are its
   concern, not this plugin's.
+- redmine_itil_priority (`redmine70-migration` head) on Redmine 7: the priority field on the issue form
+  shows a garbled glyph next to "Normal" (an icon that does not resolve), and its Urgency and Impact
+  selects are empty in e2e-project (`docs/e2e/core-new-issue-form.png`,
+  `subtask-move-journal-edit-form.png`). For that plugin's migration.
+- README "Filter semantics" says `Subtasks: Status` **none** is "has no subtask". It works through the
+  URL, the API and saved queries, but Redmine's status filter type (`:list_status`) offers no "none"
+  in the dropdown, and the tracker filters (`:list`) neither "any" nor "none". Documentation only;
+  see open question 4.
 
 ## Open questions for Jan
 
@@ -156,6 +171,10 @@ no findings.
    and sorts after `redmine_parent_child_filters` would crash the issue list (`SystemStackError`).
    Options: keep as is and check new plugins (recommended, nothing in the GEOxyz set does it), or move
    this plugin to `alias_method` chains (then a later `prepend` elsewhere is fine, an earlier one is not).
+
+4. **"none" on the status filters**: reachable only through the URL, the API or a saved query (see
+   "Found elsewhere"). Options: say so in the README (recommended, no behaviour change), or add the
+   `!*` operator to the plugin's status filters (a new operator in the UI, a behaviour change).
 
 ## GEOxyz changes to review or re-apply
 

@@ -32,7 +32,7 @@ await pcf.filtered(t, 'a-parent-pair', 'Parent task (any): Tracker is Feature AN
 await pcf.filtered(t, 'level-tracker', 'Parent task (level): Tracker is "(2) Feature": the grandchildren of the epic only.',
   P, [['a_specific_parent_tracker_id', '=', ['2:2']]], { exact: TASKS });
 
-await pcf.filtered(t, 'level-mixed', 'Parent task (level): Tracker "(1) Feature" or "(2) Feature": each depth on its own, the story and the tasks.',
+await pcf.filtered(t, 'level-mixed', 'Parent task (level): Tracker "(1) Feature" or "(2) Feature": each depth on its own, the story and the tasks (the multi-select shows the first selected value).',
   P, [['a_specific_parent_tracker_id', '=', ['2:1', '2:2']]],
   { include: ['PCF Story', ...TASKS], exclude: ['PCF Epic'] });
 
@@ -42,10 +42,10 @@ await pcf.filtered(t, 'level-status', 'Parent task (level): Status is "(1) In Pr
 // Failure paths: a depth outside the configured range or above the hard ceiling,
 // and a value that is not "tracker:depth", must never reach SQL as given.
 await pcf.filtered(t, 'level-too-deep', 'Parent task (level) "2:99", a depth far above the ceiling of 10, typed into the URL: refused quietly, no PCF issue, no error.',
-  P, [['a_specific_parent_tracker_id', '=', ['2:99']]], { exact: [] });
+  P, [['a_specific_parent_tracker_id', '=', ['2:99']]], { exact: [] }, { notAnOption: true });
 
 await pcf.filtered(t, 'level-garbage', 'Parent task (level) "x;DROP": not a tracker and depth; the page answers normally with no PCF issue.',
-  P, [['a_specific_parent_tracker_id', '=', ['x;DROP']]], { exact: [] });
+  P, [['a_specific_parent_tracker_id', '=', ['x;DROP']]], { exact: [] }, { notAnOption: true });
 
 await t.login('reporter');
 await pcf.filtered(t, 'parent-tracker-reporter', 'As reporter (core Reporter role): Parent task: Tracker is Support gives the same two tasks.',

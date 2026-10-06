@@ -22,8 +22,8 @@ await pcf.filtered(t, 'tree-status-closed', 'Tree: Status is Closed: the whole e
 await pcf.filtered(t, 'tree-tracker', 'Tree: Tracker is Support: the epic tree (its story is Support) and the standalone Support issues.',
   P, [['tree_tracker_id', '=', ['3']]], { include: [...EPIC_FAMILY, ...LONERS], exclude: ['PCF Parent of hidden'] });
 
-await pcf.filtered(t, 'tree-parent-tracker', 'Tree / Parent task: Tracker is Support: the trees in which a Support issue is a parent: the epic tree.',
-  P, [['tree_parent_tracker_id', '=', ['3']]], { include: EPIC_FAMILY, exclude: ['PCF Parent of hidden', 'PCF Browser parent'] });
+await pcf.filtered(t, 'tree-parent-tracker', 'Tree / Parent task: Tracker is Support: the trees in which a Support issue is a parent (the epic tree), and, as documented for the tree filters, standalone Support issues; not the Feature-parent trees.',
+  P, [['tree_parent_tracker_id', '=', ['3']]], { include: [...EPIC_FAMILY, ...LONERS], exclude: ['PCF Parent of hidden', 'PCF Browser parent', 'PCF Silent parent'] });
 
 await pcf.filtered(t, 'tree-child-status', 'Tree / Subtasks: Status is Closed: the trees in which a subtask is closed: the epic tree.',
   P, [['tree_child_status_id', '=', ['5']]], { include: EPIC_FAMILY, exclude: ['PCF Parent of hidden', ...LONERS] });
@@ -39,6 +39,6 @@ await pcf.filtered(t, 'tree-child-tracker-reporter', 'As reporter: Tree / Subtas
   P, [['tree_child_tracker_id', '=', ['1']]], { include: EPIC_FAMILY, exclude: ['PCF Parent of hidden'] });
 
 await pcf.filtered(t, 'invalid-flag', 'Failure path: Has a parent or a subtask = "maybe" from the URL: the page answers normally, no PCF issue.',
-  P, [['tree_has_parent_or_child', '=', ['maybe']]], { exact: [] });
+  P, [['tree_has_parent_or_child', '=', ['maybe']]], { exact: [] }, { notAnOption: true });
 
 await t.done();
