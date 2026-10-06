@@ -52,6 +52,14 @@ RSpec.describe 'what the plugin assumes about Redmine' do
       expect(query.available_filters.keys).to include('assigned_to_id', 'description')
     end
 
+    # The plugin validates the values of its date "is not" operator by extending
+    # Redmine's own validation and reporting through Redmine's own message.
+    it 'validates filters in validate_query_filters and reports through add_filter_error' do
+      expect(Query.private_method_defined?(:validate_query_filters) || Query.method_defined?(:validate_query_filters)).to be true
+      expect(Query.private_method_defined?(:add_filter_error) || Query.method_defined?(:add_filter_error)).to be true
+      expect(Query._validate_callbacks.map(&:filter)).to include(:validate_query_filters)
+    end
+
     it 'exposes delete_available_filter' do
       expect(query).to respond_to(:delete_available_filter)
     end

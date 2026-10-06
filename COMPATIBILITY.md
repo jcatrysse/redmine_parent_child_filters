@@ -20,6 +20,8 @@ their *return shape*, not only on their existence.
 | `Query#delete_available_filter(field)` | removes one filter | — |
 | `Query#filters`, `#operator_for(field)` | the current filter set and one operator | a paired tracker/status filter can no longer see its companion |
 | `Query.operators_by_filter_type` | a `class_attribute` Hash of type to operator list | the plugin's date `is not` operator disappears |
+| `Query#validate_query_filters`, `#add_filter_error(field, message)` | the validation of the filter values, with Redmine's own "is invalid" | the plugin's check of the dates given to `is not` stops running, and a value that is no date reaches SQL again |
+| core's `assigned_to_id` and `description` issue filters | offered on every issue query; a plugin that hides the field removes the filter | the people filters stop using the assignee and the description |
 | `Query#sql_for_field(field, operator, value, db_table, db_field)` | five positional arguments; builds the journal lookup for `ev` / `!ev` / `cf` | the status history operators break — the plugin feature-detects the operators but not the signature, so this is asserted |
 | `Issue.visible_condition(user)` | a SQL string mentioning only the `issues` and `projects` tables | **the visibility scoping of every relative subquery**, see below |
 | `Journal.visible_notes_condition(user, skip_pre_condition:)` | a SQL string mentioning only `journals` and `projects` | private notes could become visible through the mention filter; the original project filter rewrites `journals` to an alias and would read moves from journals the user may not see |
