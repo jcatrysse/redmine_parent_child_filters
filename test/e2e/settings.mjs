@@ -85,14 +85,18 @@ await t.go(SETTINGS);
 if (!new URL(t.page.url()).pathname.startsWith('/login')) t.problems.push(`anonymous was not sent to the login page: ${t.page.url()}`);
 await t.shot('anonymous-login', 'Anonymous is sent to the login page.', { full: false });
 
-// A POST without being admin changes nothing.
+// A POST without being admin changes nothing, even with a valid CSRF token
+// (taken from a page manager may open), so it is the admin check that refuses it.
 await t.login('manager');
-const res = await t.page.request.post(`${t.BASE}${SETTINGS}`, { form: { 'settings[enable_root_id_filter]': '0' }, maxRedirects: 0 });
-if (![403, 422].includes(res.status())) t.problems.push(`POST as manager answered ${res.status()}, expected 403 or 422`);
+await t.go('/my/page');
+const token = await t.page.locator('meta[name=csrf-token]').getAttribute('content');
+const res = await t.page.request.post(`${t.BASE}${SETTINGS}`, {
+  form: { authenticity_token: token, 'settings[enable_root_id_filter]': '0' }, maxRedirects: 0 });
+if (res.status() !== 403) t.problems.push(`POST as manager answered ${res.status()}, expected 403`);
 await t.login('admin');
 await t.go(SETTINGS);
 await t.sudo();
 if (!(await t.page.isChecked('#settings_enable_root_id_filter'))) t.problems.push('a POST by manager switched Root off');
-await t.shot('post-refused', `A POST to the settings as manager is refused (HTTP ${res.status()}); as admin, Root is still on.`, { full: false });
+await t.shot('post-refused', `A POST to the settings as manager, with a valid CSRF token, is refused (HTTP ${res.status()}); as admin, Root is still on.`, { full: false });
 
 await t.done();
