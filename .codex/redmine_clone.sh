@@ -4,6 +4,9 @@
 #
 #   ./.codex/redmine_clone.sh [5.0-stable|5.1-stable|6.0-stable|6.1-stable|7.0-stable|master]
 #
+# GEOxyz runs its own fork; any branch of it works the same way:
+#   REDMINE_REPO=https://github.com/jcatrysse/redmine.git ./.codex/redmine_clone.sh 7.0-stable-GEOxyz
+#
 # Environment:
 #   REDMINE_DIR   where to put the checkout (default: redmine)
 #   REDMINE_REPO  upstream to clone from (default: the official repository)
