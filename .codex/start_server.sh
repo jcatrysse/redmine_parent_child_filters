@@ -68,10 +68,15 @@ if [ "$adapter" = mysql2 ] && command -v mysql >/dev/null 2>&1; then
   read -r user password host port < <(run ruby -ryaml -e '
     c = YAML.load_file("config/database.yml", aliases: true)["test"]
     puts [c["username"], c["password"], c["host"] || "127.0.0.1", c["port"] || 3306].join(" ")')
-  grant="GRANT ALL ON \`${RMP_SERVER_DB_NAME}\`.* TO '$user'@'%'; GRANT ALL ON \`${RMP_SERVER_DB_NAME}\`.* TO '$user'@'localhost'; FLUSH PRIVILEGES;"
+  # One statement per account: test_setup.sh creates the user for the host it
+  # connects from (127.0.0.1), and MariaDB refuses a GRANT to an account that does
+  # not exist, which in a single -e would abort the grants after it.
   SUDO=""; [ "$(id -u)" = 0 ] || SUDO="sudo -n"
-  $SUDO mysql -e "$grant" 2>/dev/null ||
-    mysql -h "$host" -P "$port" -uroot -p"$password" -e "$grant" 2>/dev/null || true
+  for account in "$host" '%' localhost; do
+    grant="GRANT ALL ON \`${RMP_SERVER_DB_NAME}\`.* TO '$user'@'$account'; FLUSH PRIVILEGES;"
+    $SUDO mysql -e "$grant" 2>/dev/null ||
+      mysql -h "$host" -P "$port" -uroot -p"$password" -e "$grant" 2>/dev/null || true
+  done
 fi
 
 if [ ! -f "$REDMINE_DIR/config/configuration.yml" ]; then
