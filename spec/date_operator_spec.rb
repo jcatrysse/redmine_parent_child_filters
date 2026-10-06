@@ -86,6 +86,54 @@ RSpec.describe 'the is not operator on dates' do
     end
   end
 
+  # Redmine validates the values of "=", ">=", "<=" and "><" on a date filter but
+  # knows nothing of "is not", whose values it hands to SQL unchecked: on
+  # PostgreSQL a value that is no date made the issue list answer 500, and on
+  # MariaDB it quietly matched every issue.
+  describe 'validating the value' do
+    it 'refuses a value that is not a date, as Redmine does for "is"' do
+      query = unfiltered_query
+      query.add_filter('due_date', '!', ['not-a-date'])
+
+      expect(query).not_to be_valid
+      expect(query.errors.full_messages.join).to include(query.label_for('due_date'))
+    end
+
+    it 'refuses a date that does not exist' do
+      query = unfiltered_query
+      query.add_filter('start_date', '!', ['2020-02-30'])
+
+      expect(query).not_to be_valid
+    end
+
+    it 'accepts a date' do
+      query = unfiltered_query
+      query.add_filter('due_date', '!', ['2020-01-01'])
+
+      expect(query).to be_valid
+      expect { query.issue_count }.not_to raise_error
+    end
+
+    it 'refuses it on a date custom field too' do
+      custom_field = IssueCustomField.create!(:name => 'PcfDateValidationProbe', :field_format => 'date',
+                                              :is_filter => true, :is_for_all => true,
+                                              :tracker_ids => Tracker.pluck(:id))
+      query = unfiltered_query
+      query.add_filter("cf_#{custom_field.id}", '!', ['2020-13-01'])
+
+      expect(query).not_to be_valid
+    end
+
+    it 'leaves the other operators to Redmine' do
+      query = unfiltered_query
+      query.add_filter('due_date', '=', ['not-a-date'])
+      query.valid?
+
+      # One message, Redmine's own, not a second one from the plugin.
+      expect(query.errors.full_messages.size).to eq(1)
+    end
+  end
+
   # Date custom fields are typed :date too, so they gain the operator as well.
   # This is the part the plugin never advertised, and the part most likely to
   # break silently, since custom field filters build a very different subquery.

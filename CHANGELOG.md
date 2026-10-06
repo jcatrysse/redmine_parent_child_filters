@@ -1,5 +1,15 @@
 # CHANGELOG
 
+## Unreleased
+
+### Fixed
+* **"is not" on a date filter refuses a value that is not a date.** Redmine checks
+  the values of `is`, `>=`, `<=` and `between` on dates but not of the `is not`
+  this plugin adds, and passed them to SQL as given: a hand-edited URL or saved
+  query with `start_date is not abc` answered 500 on PostgreSQL and matched every
+  issue on MariaDB. It is now refused with Redmine's own "is invalid" message, on
+  every date filter, date custom fields included.
+
 ## 1.1.0
 
 Adds filtering on project history. No migration; upgrading is replacing the folder
