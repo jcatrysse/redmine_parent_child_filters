@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # Data for this plugin's end-to-end scenarios, run by .codex/start_server.sh
 # after the generic seed (.codex/e2e/seed.rb), whose users and projects it uses.
 # Idempotent: running it again changes nothing.
@@ -43,9 +45,7 @@ history.save!
 full = Role.find_by!(name: 'E2E full')
 reporter_role = Role.find_by(name: 'Reporter')
 Member.create!(principal: manager, project: history, roles: [full]) unless Member.where(user_id: manager.id, project_id: history.id).exists?
-if reporter_role && !Member.where(user_id: reporter.id, project_id: history.id).exists?
-  Member.create!(principal: reporter, project: history, roles: [reporter_role])
-end
+Member.create!(principal: reporter, project: history, roles: [reporter_role]) if reporter_role && !Member.where(user_id: reporter.id, project_id: history.id).exists?
 
 def pcf_tracker(name)
   Tracker.find_by!(name: name)
@@ -82,6 +82,8 @@ mention = pcf_issue('PCF Mention', project: project, tracker: 'Support',
 if mention.journals.none?
   mention.init_journal(admin, "Linked to user##{manager.id} for the follow-up.")
   mention.save!
+  # init_journal keeps returning the journal of the same object, so a fresh one.
+  mention = Issue.find(mention.id)
   journal = mention.init_journal(admin, 'Private: only @admin should know.')
   journal.private_notes = true
   mention.save!

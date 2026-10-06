@@ -49,13 +49,23 @@ async function filtered(t, shot, caption, project, filters, expectation, opts = 
   return got;
 }
 
+// GET on the REST API as one of the seeded users (HTTP Basic, the way an API
+// client authenticates), returning the status and the parsed body.
+const PASSWORD = process.env.RMP_USER_PASSWORD || process.env.RMP_ADMIN_PASSWORD || 'Redmine7Test!';
+async function api(t, path, login = 'admin') {
+  const auth = 'Basic ' + Buffer.from(`${login}:${login === 'admin' ? (process.env.RMP_ADMIN_PASSWORD || 'Redmine7Test!') : PASSWORD}`).toString('base64');
+  const res = await t.page.request.get(t.BASE + path, { headers: { Authorization: auth }, maxRedirects: 0 });
+  let body = null;
+  try { body = await res.json(); } catch { /* not JSON */ }
+  return { status: res.status(), body };
+}
+
 // Id of an issue by subject, as admin sees it through the REST API.
 async function issueId(t, subject) {
-  const res = await t.page.request.get(`${t.BASE}/issues.json?subject=${encodeURIComponent("~" + subject)}&status_id=*&limit=100`);
-  const body = await res.json();
-  const issue = (body.issues || []).find(i => i.subject === subject);
+  const { body } = await api(t, `/issues.json?subject=${encodeURIComponent('~' + subject)}&status_id=*&limit=100`);
+  const issue = ((body && body.issues) || []).find(i => i.subject === subject);
   if (!issue) throw new Error(`no issue "${subject}" visible to the current user`);
   return issue.id;
 }
 
-module.exports = { filterPath, subjects, expectSubjects, filtered, issueId };
+module.exports = { filterPath, subjects, expectSubjects, filtered, api, issueId };
