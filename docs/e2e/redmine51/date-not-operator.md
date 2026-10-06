@@ -1,0 +1,11 @@
+# date-not-operator
+
+Run 2026-10-06T20:15:30.948Z against http://127.0.0.1:3051.
+
+| screenshot | user | URL | shows |
+|---|---|---|---|
+| `date-not-operator-operator-offered.png` | manager | `/projects/e2e-project/issues` | Start date offers "is not" (is, >=, <=, is not, between, in less than, in more than, in the next, in, tomorrow, today, yesterday, next week, this week, last week, last 2 weeks, next month, this month, last month, this year, less than days ago, more than days ago, in the past, days ago, none, any). |
+| `date-not-operator-is.png` | manager | `/projects/e2e-project/issues?set_filter=1&sort=id&per_page=100&c%5B%5D=tracker&c%5B%5D=status&c%5B%5D=subject&c%5B%5D=project&f%5B%5D=&f%5B%5D=start_date&op%5Bstart_date%5D=%3D&v%5Bstart_date%5D%5B%5D=2026-01-15` | Start date is 2026-01-15: PCF Dated only. Result: PCF Dated. |
+| `date-not-operator-is-not.png` | manager | `/projects/e2e-project/issues?set_filter=1&sort=id&per_page=100&c%5B%5D=tracker&c%5B%5D=status&c%5B%5D=subject&c%5B%5D=project&f%5B%5D=&f%5B%5D=start_date&op%5Bstart_date%5D=%21&v%5Bstart_date%5D%5B%5D=2026-01-15` | Start date is not 2026-01-15: everything else, PCF Dated left out. Result: PCF Browser child, PCF Browser parent, PCF Epic, PCF Mention, PCF Parent of hidden, PCF Silent child, PCF Silent parent, PCF Standalone, PCF Story, PCF Task closed, PCF Task open, PCF Watched. |
+| `date-not-operator-due-is-not.png` | manager | `/projects/e2e-project/issues?set_filter=1&sort=id&per_page=100&c%5B%5D=tracker&c%5B%5D=status&c%5B%5D=subject&c%5B%5D=project&f%5B%5D=&f%5B%5D=due_date&op%5Bdue_date%5D=%21&v%5Bdue_date%5D%5B%5D=2026-01-15` | Due date is not 2026-01-15 on issues without a due date: they all stay (no due date is not that date). Result: PCF Browser child, PCF Browser parent, PCF Dated, PCF Epic, PCF Mention, PCF Parent of hidden, PCF Silent child, PCF Silent parent, PCF Standalone, PCF Story, PCF Task closed, PCF Task open, PCF Watched. |
+| `date-not-operator-invalid-date.png` | manager | `/projects/e2e-project/issues?set_filter=1&sort=id&per_page=100&c%5B%5D=tracker&c%5B%5D=status&c%5B%5D=subject&c%5B%5D=project&f%5B%5D=&f%5B%5D=start_date&op%5Bstart_date%5D=%21&v%5Bstart_date%5D%5B%5D=not-a-date` | Start date is not "not-a-date": Redmine refuses the filter with its validation message, no server error. |

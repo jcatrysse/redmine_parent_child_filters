@@ -8,6 +8,16 @@ import { e2e } from '../../.codex/e2e/lib.mjs';
 import pcf from './support.cjs';
 
 const t = await e2e('webhooks');
+
+// Webhooks are new in Redmine 7; on an older Redmine there is nothing to check.
+await t.login('manager');
+const probe = await t.page.request.get(`${t.BASE}/webhooks`, { maxRedirects: 0 });
+if (probe.status() === 404) {
+  await t.go('/my/page');
+  await t.shot('skipped', 'This Redmine has no webhooks (before 7.0): scenario skipped.', { full: false });
+  await t.done();
+  process.exit();
+}
 const received = [];
 const server = http.createServer((req, res) => {
   let body = '';
