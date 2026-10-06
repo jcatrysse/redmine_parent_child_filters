@@ -18,45 +18,176 @@ what is left. Written 2026-10-06 from a measured analysis (report at the bottom)
 | Plugin id | `redmine_parent_child_filters` |
 | GEOxyz runs today | `main` |
 | Upstream | geen |
-| Runs on Redmine 7 as is | JA |
+| Runs on Redmine 7 as is | JA (two pre-existing defects found and fixed on this branch, see below) |
 | Upstream sync | GEEN UPSTREAM |
 | After sync | n.v.t. |
 | Complexity (1 trivial .. 5 rewrite) | 1 |
-| Measured on | Redmine 7.0.1 (7.0-stable-GEOxyz + latest 7.0-stable), Rails 8.1.3.1, Ruby 3.3.6, PostgreSQL 16 and MariaDB 10.11 |
-| Branch head when this file was written | `0e03a3a` |
+| Measured on | Redmine 7.0.1 (7.0-stable-GEOxyz 8067e23), Rails 8.1, Ruby 3.3.6, PostgreSQL 16.15 and MariaDB 10.11.14; Redmine 5.1.13 (5.1-stable 16eb9e6), Ruby 3.2.6, PostgreSQL 16 |
+| Migration session | done 2026-10-06; see "Results" and "Open questions for Jan" |
 
 ## Already on this branch
 
-- nothing: the branch equals the branch GEOxyz runs today.
+Commits since the plan (`6596c05`), one concern each:
+
+- **Fix: "is not" on a date filter refuses a value that is not a date** (`ddbbf2a`). Redmine validates
+  `=`, `>=`, `<=`, `><` on dates but not the `!` this plugin adds; `start_date is not abc` answered 500
+  on PostgreSQL and matched every issue on MariaDB. Pre-existing (5.1 too, see `docs/e2e/before/`).
+  `spec/date_operator_spec.rb`, 3 examples fail without it.
+- **Fix: the people filters no longer reveal a field another plugin hides** (`a18f3c6`). With
+  redmine_issue_field_visibility hiding the assignee or the description from a role, "Assignee, author
+  or watcher" still matched the assignee and the mention filters still searched the description.
+  Found in the combination run (step 7). The assignee leg and the description search are now used only
+  while the query offers Redmine's own filter on them; without such a plugin nothing changes.
+  `spec/hidden_fields_spec.rb` (4 of 7 fail without it), contract in `spec/core_contract_spec.rb`.
+  Pre-existing (5.1 too, see `docs/e2e/before/`). Recorded under "Open questions for Jan".
+- **E2E**: `test/e2e/seed.rb`, `test/e2e/support.cjs` and 15 scenarios, one per function (inventory below).
+- **Tooling**: `.codex/start_server.sh` granted the e2e database to an account MariaDB does not have
+  (`1179bbe`); `.codex/redmine_clone.sh` header documents `REDMINE_REPO` + `7.0-stable-GEOxyz`.
+- CHANGELOG "Unreleased" and README ("A field hidden from you stays hidden") updated. Version left at 1.1.0.
+
+## Inventory of functions
+
+No routes, controllers, permissions, menus, project modules, hooks, macros, mail handlers, rake tasks or
+migrations: the plugin adds query filters, one operator, one journal on subtask moves, and a settings
+page. Every function, how a user reaches it, and the evidence (screenshots in `docs/e2e/`, the table per
+scenario in `docs/e2e/<scenario>.md`):
+
+| Function | How a user reaches it | Scenario | Screenshots (who / path) |
+|---|---|---|---|
+| Plugin settings page (26 switches, depth bounds, effective range) | Administration > Plugins > Configure | `settings.mjs` | admin page, Root off, reversed depth 3/2 shown as 3–3, restore; manager 403, reporter 403, anonymous to login, POST by manager refused |
+| Switch a filter off | settings | `settings.mjs` | Root gone from the dropdown, a URL still carrying it is ignored |
+| Depth bounds of "Parent task (level)" | settings | `settings.mjs`, `filter-group.mjs` | values (1)..(5), then only (3) |
+| Filter group "Parent and child" in Add filter | issue list | `filter-group.mjs` | manager, reporter, outsider, anonymous; picking adds rows; private project 403 for outsider |
+| Root, Root: Tracker, Root: Status | issue list / API | `root-filters.mjs` | is, is not, closed, invalid id, id list; reporter |
+| Parent task: Tracker/Status, has been | issue list | `parent-filters.mjs` | is, is not, `ev` |
+| Parent task (any): Tracker/Status, paired | issue list | `parent-filters.mjs` | any level, pair on one ancestor |
+| Parent task (level): Tracker/Status | issue list | `parent-filters.mjs` | (2) Feature, mixed depths, depth 99 and garbage refused quietly |
+| Subtasks: Tracker/Status, paired, any/none | issue list | `child-filters.mjs` | manager sees the subtask in the private project, reporter does not (is, any, none, all projects) |
+| Subtasks (any): Tracker/Status | issue list | `child-filters.mjs` | two levels down |
+| Tree filters (has parent or subtask, tree, tree/parent, tree/subtasks) | issue list | `tree-filters.mjs` | yes/no, closed, tracker, reporter with a hidden relative, invalid flag |
+| Assignee, author or watcher | issue list | `people-filters.mjs` | manager, reporter (me, not me), watchers hidden without "View watchers list" |
+| Mentioned or linked; Assignee, author, watcher, mentioned or linked | issue list | `people-filters.mjs` | @login, user#id, private note for manager only, garbage value |
+| Hidden core fields (with redmine_issue_field_visibility) | issue list | `hidden-fields.mjs` | before/after hiding assignee and description from Reporter; manager unchanged; restored. Before pictures in `docs/e2e/before/` |
+| Project (History), Project (Original) | issue list, inside a project too | `project-history.mjs` | original, has been, never been, changed from, is; global; subtask history; unknown project; outsider's values and private project |
+| "is not" on date filters | issue list | `date-not-operator.mjs` | operator offered, is, is not, due date, invalid date refused (was 500, `docs/e2e/before/`) |
+| Journal for subtasks moved with their parent | issue edit form (move) | `subtask-move-journal.mjs` | child history by manager, parent history, one mail for the parent and none for the child, setting off = no journal, reporter has no project field |
+| REST API `/issues.json` with the filters | API (Basic auth) | `rest-api.mjs` | 15 calls: both parameter styles, reporter visibility, outsider 403, invalid date 422, depth 99 and `1 OR 1=1` match nothing |
+| Redmine 7 webhooks | webhook to a local listener | `webhooks.mjs` | one `issue.updated` per moved issue, subtask payload with its new project, no duplicate |
+| Core pages and flows with the plugin | | `.codex/e2e/smoke.mjs`, `core.mjs` | 11 + 6 screenshots |
 
 ## Work list for the migration session
 
-In this order: things that break, security, the GEOxyz changes, the open items, then the checks.
+1. Geen migratiewerk; `claude/codex-script-fixes` (only .codex tooling) can be merged separately.
+   **Done**: nothing needed on this branch for it. Not merged here (another branch).
+2. Integration: order of `alias_method` (issue_field_visibility, itil_priority) vs `prepend` (this plugin)
+   on `IssueQuery#initialize_available_filters`. **Done, confirmed**:
+   - Installed together (`redmine70-migration` heads of both): load order `[:redmine_issue_field_visibility,
+     :redmine_itil_priority, :redmine_parent_child_filters]`, 68 filters, rspec and the whole e2e set
+     green on MariaDB (numbers below).
+   - The reverse (an `alias_method` chain set *after* this plugin's prepends) was reproduced in a
+     runner: `SystemStackError: stack level too deep` on `available_filters`. It does not happen with
+     the GEOxyz set: of all 47 jcatrysse plugin repositories, only redmine_issue_field_visibility,
+     redmine_itil_priority and redmine_issue_todo_lists2 alias-chain that method, and all three sort
+     before `redmine_parent_child_filters` (Redmine loads plugins in directory order). Recorded under
+     "After the upgrade".
+   - The combination found a real leak, fixed: see "Already on this branch".
+3. Tests on 7.0-stable-GEOxyz with PostgreSQL and MariaDB, and on 5.1-stable. **Done**, see "Results".
+4. Webhooks. **Done, nothing needed**: core sends `issue.updated` from `after_update_commit` for every
+   saved issue, so a subtask moved with its parent was already delivered by core before this plugin; the
+   journal the plugin adds is written in the same save and adds no delivery and nothing to the payload
+   (`issues/show.api.rsb` without journals). The filters change no issue data. Shown end to end in
+   `webhooks.mjs` (2 deliveries for a parent and its subtask). The hidden-fields fix concerns filters
+   only; payload visibility of assignee/description under redmine_issue_field_visibility is that
+   plugin's concern.
+5. Every feature by hand on Redmine 7 with screenshots. **Done**: inventory above.
 
-**Open items from the analysis** (Dutch; where they conflict with a decision or a priority item above, those win)
+## Results
 
-1. Geen migratiewerk; claude/codex-script-fixes (alleen .codex-tooling) kan los gemerged worden
-2. Integratietest: volgorde alias_method (issue_field_visibility, itil_priority) vs prepend (deze plugin) op IssueQuery#initialize_available_filters bevestigen
+**rspec** (`./.codex/test_plugin.sh`):
 
-**Checks**
+| Redmine | Database | Plugins | Before (main) | This branch |
+|---|---|---|---|---|
+| 7.0-stable-GEOxyz | PostgreSQL 16 | alone | 728, 0 failures, 2 pending (MySQL only) | RESULT_PG |
+| 7.0-stable-GEOxyz | MariaDB 10.11 | alone | 728, 0 failures, 1 pending (PostgreSQL only) | RESULT_MARIA |
+| 7.0-stable-GEOxyz | MariaDB 10.11 | + issue_field_visibility + itil_priority | | RESULT_MARIA_COMBO |
+| 7.0-stable-GEOxyz | PostgreSQL 16 | + issue_field_visibility + itil_priority | | RESULT_PG_COMBO |
+| 5.1-stable | PostgreSQL 16 | alone | | 741, 0 failures, 2 pending |
 
-3. Run the plugin's whole test suite on Redmine 7.0-stable-GEOxyz with PostgreSQL AND MariaDB, and once on 5.1-stable if the branch is meant to stay 5.1-compatible.
-4. Check Redmine 7 webhooks against this plugin (see "Rules"), and note the result here even if nothing is needed.
-5. Verify every feature of the plugin by hand on a running Redmine 7 (screenshots).
+RuboCop 1.88.2 (the lint workflow's version): no offenses. `.codex/test_scripts.sh`: 12 checks, 0 failures.
+
+**e2e** (`./.codex/start_server.sh --reset` then `./.codex/e2e.sh`, production mode):
+
+| Redmine | Database | Plugins | Scripts | Screenshots | Problems |
+|---|---|---|---|---|---|
+| 7.0 baseline (main, before any change) | PostgreSQL | alone | smoke + core | 17 | 0 |
+| 7.0 | PostgreSQL | + ifv + itil (`docs/e2e/`) | RESULT_E2E_PG |
+| 7.0 | MariaDB | + ifv + itil (`docs/e2e/mariadb/`, tables only) | RESULT_E2E_MARIA |
+| 5.1 | PostgreSQL | + ifv (master) (`docs/e2e/redmine51/`, tables only) | 15 | 116 | 0 |
+| 5.1, branch main (`docs/e2e/before/`) | PostgreSQL | + ifv (master) | 2 | 11 | 3, the two defects fixed here |
+
+Every screenshot in `docs/e2e/` was opened and looked at; the captions say what each proves.
+
+**Found elsewhere, not fixed here** (rule: write down, do not fix in passing):
+- Redmine core (7.0-stable-GEOxyz): `GET /issues.json?tracker_id=*` answers 500
+  (`PG::InvalidTextRepresentation`): the legacy short filter turns `*` into a value for a `:list` filter
+  that has no `*` operator. Same pattern for this plugin's list filters returns an empty list, not an
+  error.
+- redmine_issue_field_visibility hides fields per role; webhooks and the REST API of core are its
+  concern, not this plugin's.
+
+## Open questions for Jan
+
+1. **Hidden fields and the people filters** (security, behaviour change for some users). Options:
+   (a) as built: the people filters use the assignee/description only when the query offers Redmine's own
+   filter on them, generic, no dependency on redmine_issue_field_visibility; (b) name that plugin and
+   ask it per issue project; (c) leave as it was (a role with the assignee hidden can still find it).
+   Recommendation: (a). Users who can see the fields notice nothing; users from whom they are hidden
+   lose exactly what they should not have had.
+2. **Version number**: the two fixes sit under "Unreleased" in the CHANGELOG, `init.rb` still says 1.1.0.
+   Recommendation: release as 1.1.1 when this branch is merged.
+3. **Load order constraint**: a future plugin that alias-chains `IssueQuery#initialize_available_filters`
+   and sorts after `redmine_parent_child_filters` would crash the issue list (`SystemStackError`).
+   Options: keep as is and check new plugins (recommended, nothing in the GEOxyz set does it), or move
+   this plugin to `alias_method` chains (then a later `prepend` elsewhere is fine, an earlier one is not).
 
 ## GEOxyz changes to review or re-apply
 
-Own plugin: all of it is GEOxyz code, so there is nothing to re-apply. While migrating, hold the code you touch to the rules below; list larger quality problems you find in the work list instead of fixing them in passing.
+Own plugin: all of it is GEOxyz code, so there is nothing to re-apply.
 
 ## After the upgrade (production)
 
 Actions the person doing the upgrade must take, or know about, for this plugin:
 
-- None known. Add here what the session finds.
+- None required: no migration, no setting, no data fix. Replace the folder and restart.
+- Keep the plugin directory named `redmine_parent_child_filters`, and do not install a plugin that
+  alias-chains `IssueQuery#initialize_available_filters` under a name that sorts after it (see work list
+  item 2).
+- If redmine_issue_field_visibility hides the assignee or the description from a role, users with that
+  role will no longer find issues through those fields in the people filters (intended, see question 1).
+- Subtasks moved before the plugin journaled such moves still have no history entry; nothing to do.
 
 ## How to test
 
 This repo already has its own `.codex/` scripts (older variant). Read their headers and use them; check they accept `7.0-stable-GEOxyz` (clone from https://github.com/jcatrysse/redmine.git) and MariaDB. The shared variant from the other plugin repos may replace them if that is simpler.
+
+Checked in the migration session: they do.
+
+```sh
+REDMINE_REPO=https://github.com/jcatrysse/redmine.git ./.codex/redmine_clone.sh 7.0-stable-GEOxyz
+PCF_DB=postgresql ./.codex/test_setup.sh && ./.codex/test_plugin.sh     # or PCF_DB=mariadb
+```
+
+- Switching the database means running `test_setup.sh` again (it rewrites `database.yml` and the
+  bundle groups); then `start_server.sh --reset`.
+- After a change to the plugin, copy it into the checkout again (`redmine_clone.sh`, or
+  `rsync -a --delete --exclude /redmine/ --exclude /.git/ ./ redmine/plugins/redmine_parent_child_filters/`)
+  and restart the server (`start_server.sh`).
+- Do not pipe `start_server.sh` into another command: the server keeps the pipe open. Redirect to a file.
+- Redmine 5.1 needs Ruby < 3.3: `PATH=/opt/rbenv/versions/3.2.6/bin:$PATH`, its own `REDMINE_DIR`,
+  `PCF_DB_NAME`, `RMP_PORT` and `RMP_SERVER_DB_NAME`.
+- Combination: copy redmine_issue_field_visibility and redmine_itil_priority into `redmine/plugins/`,
+  `bundle install`, `rake redmine:plugins:migrate` for test and production; `hidden-fields.mjs` needs the
+  first one and records a skip without it.
 
 Then the real Redmine and the browser checks (shared scripts, they use the checkout in `redmine/` or `REDMINE_DIR`):
 
