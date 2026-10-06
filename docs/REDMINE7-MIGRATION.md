@@ -107,11 +107,11 @@ scenario in `docs/e2e/<scenario>.md`):
 
 | Redmine | Database | Plugins | Before (main) | This branch |
 |---|---|---|---|---|
-| 7.0-stable-GEOxyz | PostgreSQL 16 | alone | 728, 0 failures, 2 pending (MySQL only) | RESULT_PG |
-| 7.0-stable-GEOxyz | MariaDB 10.11 | alone | 728, 0 failures, 1 pending (PostgreSQL only) | RESULT_MARIA |
-| 7.0-stable-GEOxyz | MariaDB 10.11 | + issue_field_visibility + itil_priority | | RESULT_MARIA_COMBO |
-| 7.0-stable-GEOxyz | PostgreSQL 16 | + issue_field_visibility + itil_priority | | RESULT_PG_COMBO |
-| 5.1-stable | PostgreSQL 16 | alone | | 741, 0 failures, 2 pending |
+| 7.0-stable-GEOxyz | PostgreSQL 16 | alone | 728, 0 failures, 2 pending (MySQL only) | 742, 0 failures, 2 pending (MySQL only) |
+| 7.0-stable-GEOxyz | MariaDB 10.11 | alone | 728, 0 failures, 1 pending (PostgreSQL only) | 742, 0 failures, 1 pending (PostgreSQL only) |
+| 7.0-stable-GEOxyz | MariaDB 10.11 | + issue_field_visibility + itil_priority | | 742, 0 failures, 1 pending |
+| 7.0-stable-GEOxyz | PostgreSQL 16 | + issue_field_visibility + itil_priority | | 742, 0 failures, 2 pending |
+| 5.1-stable | PostgreSQL 16 | + issue_field_visibility (master) | | 742, 0 failures, 2 pending |
 
 RuboCop 1.88.2 (the lint workflow's version): no offenses. `.codex/test_scripts.sh`: 12 checks, 0 failures.
 
@@ -120,12 +120,19 @@ RuboCop 1.88.2 (the lint workflow's version): no offenses. `.codex/test_scripts.
 | Redmine | Database | Plugins | Scripts | Screenshots | Problems |
 |---|---|---|---|---|---|
 | 7.0 baseline (main, before any change) | PostgreSQL | alone | smoke + core | 17 | 0 |
-| 7.0 | PostgreSQL | + ifv + itil (`docs/e2e/`) | RESULT_E2E_PG |
-| 7.0 | MariaDB | + ifv + itil (`docs/e2e/mariadb/`, tables only) | RESULT_E2E_MARIA |
+| 7.0 | PostgreSQL | + ifv + itil (`docs/e2e/`) | 15 | 116 | 0 |
+| 7.0 | MariaDB | + ifv + itil (`docs/e2e/mariadb/`, tables only) | 15 | 116 | 0 |
 | 5.1 | PostgreSQL | + ifv (master) (`docs/e2e/redmine51/`, tables only) | 15 | 116 | 0 |
 | 5.1, branch main (`docs/e2e/before/`) | PostgreSQL | + ifv (master) | 2 | 11 | 3, the two defects fixed here |
 
-Every screenshot in `docs/e2e/` was opened and looked at; the captions say what each proves.
+Screenshots in `docs/e2e/`: the captions say what each proves (check of every picture against its caption: see below). Plain
+PostgreSQL and MariaDB runs without the other plugins were green as well during the session (14
+scripts each, before `hidden-fields.mjs` existed). Migrations: the plugin has none; boot and eager
+load in production mode are exercised by every server start.
+
+**Review**: own adversarial review of the whole diff (added the contract rows for the core methods the
+fixes use); OpenAI review `docs/reviews/openai-2026-10-06-5c045a2.md` (gpt-5, range 5a82e2f..5c045a2):
+no findings.
 
 **Found elsewhere, not fixed here** (rule: write down, do not fix in passing):
 - Redmine core (7.0-stable-GEOxyz): `GET /issues.json?tracker_id=*` answers 500
