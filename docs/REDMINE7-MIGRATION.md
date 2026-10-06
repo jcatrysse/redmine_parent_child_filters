@@ -139,7 +139,9 @@ load in production mode are exercised by every server start.
 
 **Review**: own adversarial review of the whole diff (added the contract rows for the core methods the
 fixes use); OpenAI review `docs/reviews/openai-2026-10-06-5c045a2.md` (gpt-5, range 5a82e2f..5c045a2):
-no findings.
+no findings. Second run after the e2e fixes, `docs/reviews/openai-2026-10-06-3a69730.md`: one finding
+(SQL injection through the principal ids), rejected with the reason there: the ids are parsed strictly
+before they reach the SQL, covered by `spec/security_spec.rb`.
 
 **Found elsewhere, not fixed here** (rule: write down, do not fix in passing):
 - Redmine core (7.0-stable-GEOxyz): `GET /issues.json?tracker_id=*` answers 500
