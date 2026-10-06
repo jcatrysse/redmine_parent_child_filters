@@ -9,6 +9,14 @@
   query with `start_date is not abc` answered 500 on PostgreSQL and matched every
   issue on MariaDB. It is now refused with Redmine's own "is invalid" message, on
   every date filter, date custom fields included.
+* **The people filters no longer reveal a field another plugin hides.** A plugin
+  such as redmine_issue_field_visibility hides the assignee or the description
+  from a role by removing its filter. *Assignee, author or watcher* still matched
+  on the assignee, and the mention filters still searched the description, so
+  such a user could find out who an issue is assigned to, or whether its
+  description names someone. Both now use the assignee and the description only
+  while the query offers Redmine's own filter on them; without such a plugin
+  nothing changes.
 
 ## 1.1.0
 

@@ -58,15 +58,23 @@ module RedmineParentChildFilters
       # list without repeating them.
       def pcf_involvement_legs(ids)
         list = ids.join(',')
-        [
-          "#{Issue.table_name}.author_id IN (#{list})",
-          # assigned_to_id is nullable, and NULL IN (...) is UNKNOWN rather than
-          # false, which would swallow unassigned issues under a NOT.
-          "(#{Issue.table_name}.assigned_to_id IS NOT NULL AND #{Issue.table_name}.assigned_to_id IN (#{list}))",
-          # Redmine's own watcher condition, so that watchers of other users stay
-          # behind the view_issue_watchers permission.
-          sql_for_watcher_id_field('watcher_id', '=', ids.map(&:to_s))
-        ]
+        legs = ["#{Issue.table_name}.author_id IN (#{list})"]
+        # assigned_to_id is nullable, and NULL IN (...) is UNKNOWN rather than
+        # false, which would swallow unassigned issues under a NOT.
+        assignee = "(#{Issue.table_name}.assigned_to_id IS NOT NULL AND #{Issue.table_name}.assigned_to_id IN (#{list}))"
+        legs << assignee if pcf_core_filter_offered?('assigned_to_id')
+        # Redmine's own watcher condition, so that watchers of other users stay
+        # behind the view_issue_watchers permission.
+        legs << sql_for_watcher_id_field('watcher_id', '=', ids.map(&:to_s))
+      end
+
+      # Whether this query still offers Redmine's own filter on a field. Core
+      # always does; a plugin that hides a field from a role removes its filter
+      # (redmine_issue_field_visibility does that for the assignee and the
+      # description), and these filters then leave the field alone too, rather
+      # than answer what the user can no longer ask directly.
+      def pcf_core_filter_offered?(name)
+        available_filters.key?(name)
       end
 
       def pcf_no_principal_condition(operator)

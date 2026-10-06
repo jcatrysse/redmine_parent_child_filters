@@ -45,6 +45,13 @@ RSpec.describe 'what the plugin assumes about Redmine' do
         .to eq(I18n.t(:label_filter_child_status_id))
     end
 
+    # The people filters use the assignee and the description only while the
+    # query offers Redmine's own filter on them (a plugin hiding the field removes
+    # it). A Redmine that stopped offering them would silently narrow both.
+    it 'offers the assignee and the description filters on an issue query' do
+      expect(query.available_filters.keys).to include('assigned_to_id', 'description')
+    end
+
     it 'exposes delete_available_filter' do
       expect(query).to respond_to(:delete_available_filter)
     end

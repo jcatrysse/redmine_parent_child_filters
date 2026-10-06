@@ -212,6 +212,12 @@ so the OR has to live inside a single filter; this is the same shape Redmine its
 uses for its watcher filter. "is not" negates the whole group, so it means
 *not involved in any of those roles*, and unassigned issues are kept.
 
+**A field hidden from you stays hidden.** A plugin that hides a core field from a
+role, such as redmine_issue_field_visibility, removes Redmine's filter on it. The
+people filters follow: without the *Assignee* filter, `involved` and
+`involved_or_mentioned` leave the assignee out; without the *Description* filter,
+the mention filters search the notes only.
+
 ## Project history
 
 Redmine writes a journal entry when an issue moves to another project, and both

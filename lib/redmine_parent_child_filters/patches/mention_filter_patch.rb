@@ -127,7 +127,14 @@ module RedmineParentChildFilters
           user_ids = pcf_mention_user_ids(ids)
           return if logins.empty? && user_ids.empty?
 
-          description = pcf_mention_match(logins, user_ids, "#{Issue.table_name}.description")
+          # Not when a plugin hides the description from this user; see
+          # pcf_core_filter_offered?.
+          description =
+            if pcf_core_filter_offered?('description')
+              pcf_mention_match(logins, user_ids, "#{Issue.table_name}.description")
+            else
+              '1=0'
+            end
 
           # Skipping journals without notes matters: most rows in the table are
           # attribute changes, and they can never hold a mention.
