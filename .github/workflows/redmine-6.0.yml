@@ -4,9 +4,6 @@ name: Redmine 6.0
 # in specs.yml, which in turn calls the .codex scripts, so CI and a laptop run the
 # same thing.
 on:
-  push:
-    branches: ['**']
-  pull_request:
   workflow_dispatch:
 
 concurrency:
