@@ -57,7 +57,8 @@ Commits since the plan (`6596c05`), one concern each:
   assertion changed.
 - **E2E `core-pages.mjs`** (Jan's general decision): Project > Settings, issue list, issue page.
 - CHANGELOG "Unreleased" and README ("A field hidden from you stays hidden", "none" on the status
-  filters) updated; COMPATIBILITY.md describes the `buildFilterRow` wrap. Version left at 1.1.0.
+  filters) updated; COMPATIBILITY.md describes the `buildFilterRow` wrap.
+- **Version 1.2.0** (Jan, 2026-10-07, round 2): `init.rb`, CHANGELOG, README upgrade note, `spec/version_spec.rb`.
 
 ## Inventory of functions
 
@@ -124,6 +125,7 @@ scenario in `docs/e2e/<scenario>.md`):
 | Run | Plugins | rspec | e2e scripts / screenshots / problems |
 |---|---|---|---|
 | 7.0-stable-GEOxyz | alone | 756 examples, 0 failures, 2 pending (MySQL only) | 17 / 131 / 0 (`docs/e2e/`) |
+| 7.0-stable-GEOxyz, after the version bump | alone | 759 examples, 0 failures, 2 pending (MySQL only) | not rerun: version number only |
 | 7.0-stable-GEOxyz | all 43 GEOxyz plugins, `redmine70-migration` heads, with the ifv test shim below | 756 examples, 0 failures, 2 pending | 17 / 136 / 5, none from this plugin (`docs/e2e/geoxyz-all/`) |
 
 RuboCop 1.88.2: no offenses. Every screenshot of the new and changed scenarios (status-none,
@@ -236,12 +238,14 @@ Answered by Jan on 2026-10-07 in the coordinating session (recorded verbatim in
 3. *Hoe maken we 'geen' bij de statusfilter voor subtaken bruikbaar?* (2026-10-07) Jan chose B:
    "De keuze 'none' aan de keuzelijst toevoegen" (Gebruikers kunnen het zelf kiezen, maar het is een
    nieuwe optie op het scherm en dus een gedragswijziging.). Built, see "Already on this branch".
+4. *Welk versienummer krijgt hij bij de livegang?* (2026-10-07, round 2, recorded in
+   `docs/DECISIONS-2026-10-07.md`) Jan chose "1.2.0" (Een hoger tussennummer, omdat er een nieuwe
+   keuze in de filters bijkomt.). Built: `init.rb`, CHANGELOG and README say 1.2.0,
+   `spec/version_spec.rb` keeps them in step.
 
 ## Open questions for Jan
 
-1. **Version number** (not part of the 2026-10-07 answers): the fixes sit under "Unreleased" in the
-   CHANGELOG, `init.rb` still says 1.1.0. Recommendation: release as 1.1.1 (or 1.2.0, since decision 3
-   adds an operator) when this branch goes live.
+None.
 
 ## GEOxyz changes to review or re-apply
 
