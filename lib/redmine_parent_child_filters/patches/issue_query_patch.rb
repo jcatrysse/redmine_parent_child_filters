@@ -48,6 +48,15 @@ module RedmineParentChildFilters
           tree_status_id tree_parent_status_id tree_child_status_id
         ].freeze
 
+        # Status filters whose relative may be missing, so that "none" means
+        # something: they offer it in the dropdown. The root and the whole tree
+        # always exist, so there "none" would always be empty.
+        STATUS_FILTERS_WITH_NONE = %w[
+          parent_status_id a_parent_status_id
+          child_status_id a_child_status_id
+          tree_parent_status_id tree_child_status_id
+        ].freeze
+
         # The order the filters appear in, so that the dropdown groups the
         # hierarchy the way the sidebar does: root first, then up, then down,
         # then the whole tree.
@@ -83,6 +92,8 @@ module RedmineParentChildFilters
             {:type => :list, :values => lambda { pcf_depth_values(issue_statuses_values) }}
           when *TRACKER_FILTERS
             {:type => :list, :values => lambda { pcf_tracker_values }}
+          when *STATUS_FILTERS_WITH_NONE
+            {:type => QueryInclude::STATUS_WITH_NONE, :values => lambda { issue_statuses_values }}
           when *STATUS_FILTERS
             {:type => :list_status, :values => lambda { issue_statuses_values }}
           else

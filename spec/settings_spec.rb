@@ -109,10 +109,12 @@ RSpec.describe 'plugin settings' do
     expect(IssueQuery.new.available_filters.keys).not_to include('root_id')
   end
 
-  # The page has to be right with scripting off: the plugin ships no JavaScript, so
+  # The page has to be right with scripting off: the settings ship no JavaScript, so
   # the server is the only thing that can normalise a reversed pair. Asserted on the
   # partial rather than the rendered page, which of course carries Redmine's own
-  # scripts.
+  # scripts. The one script the plugin ships, pcf_filters.js, renders a filter type
+  # in the issue filter form (Jan, 2026-10-07: "none" on the status filters) and has
+  # nothing to do with this page; any other script is a change to look at.
   it 'contributes no script tag and no inline handler' do
     partial = File.read(
       File.expand_path('../app/views/settings/_parent_child_filters_settings.html.erb', __dir__)
@@ -120,7 +122,7 @@ RSpec.describe 'plugin settings' do
 
     expect(partial).not_to include('<script')
     expect(partial).not_to match(/\son(?:click|change|load|submit)=/)
-    expect(Dir[File.expand_path('../assets/**/*.js', __dir__)]).to eq([])
+    expect(Dir[File.expand_path('../assets/**/*.js', __dir__)].map { |f| File.basename(f) }).to eq(['pcf_filters.js'])
   end
 
   it 'states what a level means, in the interface, using core\'s own wording' do

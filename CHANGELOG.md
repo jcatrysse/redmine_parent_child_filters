@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+### Added
+* **"none" in the dropdown of the status filters whose relative may be missing**
+  (*Parent task*, *Parent task (any)*, *Subtasks*, *Subtasks (any)*, *Tree / Parent
+  task*, *Tree / Subtasks*: Status). It already worked through the URL and the API;
+  Redmine's status filter type offers only "any", so these filters get a type of their
+  own, `:pcf_list_status`, and a small script (`pcf_filters.js`, loaded in the page
+  head) renders it in the filter form. Redmine's own status filter is unchanged.
+
 ### Fixed
 * **"is not" on a date filter refuses a value that is not a date.** Redmine checks
   the values of `is`, `>=`, `<=` and `between` on dates but not of the `is not`

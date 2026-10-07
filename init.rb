@@ -51,3 +51,4 @@ require File.dirname(__FILE__) + '/lib/redmine_parent_child_filters/patches/proj
 require File.dirname(__FILE__) + '/lib/redmine_parent_child_filters/patches/subtask_move_journal_patch'
 require File.dirname(__FILE__) + '/lib/redmine_parent_child_filters/patches/queries_helper_patch'
 require File.dirname(__FILE__) + '/lib/redmine_parent_child_filters/patches/query_include'
+require File.dirname(__FILE__) + '/lib/redmine_parent_child_filters/hooks'

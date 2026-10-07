@@ -196,6 +196,14 @@ and belongs to a tree — so there **any** is every issue and **none** is no iss
 The two always partition the issue list between them: every issue matches exactly
 one of them, on every filter.
 
+In the dropdown, the status filters of a relative that may be missing (*Parent task*,
+*Parent task (any)*, *Subtasks*, *Subtasks (any)*, *Tree / Parent task* and *Tree /
+Subtasks*) offer **none** next to **any**; Redmine's own status type has only **any**,
+so they use a type of their own, rendered by a small script the plugin loads in the
+page head. *Root: Status* and *Tree: Status* do not offer it, since there it would
+always be empty. The tracker filters offer neither, as Redmine's list type does not;
+**any** and **none** still work on them through the URL, the REST API and saved queries.
+
 **"Exists" always means "exists as far as you can see."** Every question about a
 relative — its tracker, its status, or merely whether it is there — is answered within
 the issues Redmine lets the current user see. So *has a subtask* is false for an issue

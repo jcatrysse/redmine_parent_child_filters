@@ -39,7 +39,7 @@ their *return shape*, not only on their existence.
 
 ## Assumptions that are not public API
 
-Two, both deliberate, both asserted.
+Three, all deliberate; the first two asserted by the contract spec, the third by the e2e scenario `status-none.mjs`.
 
 ### Rewriting table names in `Issue.visible_condition`
 
@@ -94,6 +94,20 @@ Mutating and restoring the real object under `ensure` is the smallest assumption
 of the three: it needs the ivar to be named `@available_filters` and nothing else.
 The spec asserts that `available_filters` reads that ivar, and that the query is
 left exactly as it was found.
+
+### Wrapping `buildFilterRow` in the filter form
+
+The status filters that offer "none" have a filter type of their own,
+`:pcf_list_status` (Redmine's `:list_status` plus `!*`). Redmine's filter form draws a
+row with `buildFilterRow(field, operator, values)` from `application-legacy.js`, which
+takes the operators from the global `operatorByType[type]` and draws a value list only
+for the types it knows. `assets/javascripts/pcf_filters.js`, loaded through the
+`view_layouts_base_html_head` hook, wraps that function: for a filter of the plugin's
+type it presents the filter as `list_status` with the longer operator list for the
+duration of the call, then restores both. It assumes the globals `buildFilterRow`,
+`operatorByType` and `availableFilters` and that `list_status` gets a value list. If
+they change, the row of those six filters loses its values or its "none"; nothing else
+is affected, and the filters keep working through the URL and the API.
 
 ## What the plugin writes
 
