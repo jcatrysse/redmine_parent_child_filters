@@ -4,7 +4,7 @@ Redmine::Plugin.register :redmine_parent_child_filters do
   name 'Redmine Parent Child Filters Plugin'
   author 'Jan Catrysse'
   description 'Filter issues by their parent, child and tree relationships, by who is involved in or mentioned on them, and by the projects they have been in'
-  version '1.1.0'
+  version '1.2.0'
   url 'https://github.com/jcatrysse/redmine_parent_child_filters'
   author_url 'https://github.com/jcatrysse'
 

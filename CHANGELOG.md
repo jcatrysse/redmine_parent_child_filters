@@ -1,6 +1,9 @@
 # CHANGELOG
 
-## Unreleased
+## 1.2.0
+
+Adds "none" to six status filters and fixes two defects found while moving to
+Redmine 7. No migration; upgrading is replacing the folder and restarting.
 
 ### Added
 * **"none" in the dropdown of the status filters whose relative may be missing**

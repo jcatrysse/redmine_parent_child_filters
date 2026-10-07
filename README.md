@@ -532,6 +532,18 @@ beyond the restart.
 Saved queries that used a filter from this plugin keep their stored filter, which
 Redmine then ignores as unknown. Re-installing the plugin brings them back.
 
+## Upgrading to 1.2.0
+
+Replace the folder and restart; there is no migration. Three things change for users:
+
+* Six status filters (*Parent task*, *Parent task (any)*, *Subtasks*, *Subtasks (any)*,
+  *Tree / Parent task*, *Tree / Subtasks*) offer **none** in their operator list. The
+  browser loads one small script for it, `pcf_filters.js`.
+* **is not** on a date filter refuses a value that is not a date, with Redmine's own
+  "is invalid" message, where it used to fail or match everything.
+* Where another plugin hides the assignee or the description from a role, the people
+  filters no longer find issues through that field for that role.
+
 ## Upgrading to 1.1.0
 
 Replace the folder and restart; there is no migration. Two things change for an
