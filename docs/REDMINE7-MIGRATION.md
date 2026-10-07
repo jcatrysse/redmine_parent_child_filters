@@ -22,8 +22,8 @@ what is left. Written 2026-10-06 from a measured analysis (report at the bottom)
 | Upstream sync | GEEN UPSTREAM |
 | After sync | n.v.t. |
 | Complexity (1 trivial .. 5 rewrite) | 1 |
-| Measured on | Redmine 7.0.1 (7.0-stable-GEOxyz 8067e23), Rails 8.1, Ruby 3.3.6, PostgreSQL 16.15 and MariaDB 10.11.14; Redmine 5.1.13 (5.1-stable 16eb9e6), Ruby 3.2.6, PostgreSQL 16 |
-| Migration session | done 2026-10-06; see "Results" and "Open questions for Jan" |
+| Measured on | Redmine 7.0.1 (7.0-stable-GEOxyz 8067e23), Rails 8.1, Ruby 3.3.6, PostgreSQL 16.15, alone and with all 43 GEOxyz plugins (2026-10-07). Earlier, no longer required: MariaDB 10.11.14, Redmine 5.1.13 |
+| Migration session | done 2026-10-06; Jan's decisions of 2026-10-07 built the same day; see "Decided by Jan" and "Results" |
 
 ## Already on this branch
 
@@ -39,11 +39,25 @@ Commits since the plan (`6596c05`), one concern each:
   Found in the combination run (step 7). The assignee leg and the description search are now used only
   while the query offers Redmine's own filter on them; without such a plugin nothing changes.
   `spec/hidden_fields_spec.rb` (4 of 7 fail without it), contract in `spec/core_contract_spec.rb`.
-  Pre-existing (5.1 too, see `docs/e2e/before/`). Recorded under "Open questions for Jan".
+  Pre-existing (5.1 too, see `docs/e2e/before/`). Kept by Jan's decision 1 (2026-10-07).
 - **E2E**: `test/e2e/seed.rb`, `test/e2e/support.cjs` and 15 scenarios, one per function (inventory below).
 - **Tooling**: `.codex/start_server.sh` granted the e2e database to an account MariaDB does not have
   (`1179bbe`); `.codex/redmine_clone.sh` header documents `REDMINE_REPO` + `7.0-stable-GEOxyz`.
-- CHANGELOG "Unreleased" and README ("A field hidden from you stays hidden") updated. Version left at 1.1.0.
+- **Decision 3 (Jan, 2026-10-07): "none" in the dropdown of the status filters of a relative that may be
+  missing** (`a40b42c`). Parent task, Parent task (any), Subtasks, Subtasks (any), Tree / Parent task and
+  Tree / Subtasks: Status get the filter type `:pcf_list_status` (Redmine's `:list_status` plus `!*`,
+  before `*`); Root: Status, Tree: Status and Redmine's own Status keep `:list_status`.
+  `assets/javascripts/pcf_filters.js`, loaded through `view_layouts_base_html_head`, makes Redmine's
+  filter form draw the new type. `spec/status_none_operator_spec.rb`: 10 of its 14 examples fail
+  without the change (the commit message says 12; 10 is the count). The settings spec's "ships no
+  JavaScript" now allows exactly this one script, which belongs to the filter form.
+  E2E `status-none.mjs`, 10 screenshots.
+- **Specs that hold with all GEOxyz plugins** (`52fbdb9`): the status-history setup uses a fresh Issue
+  per change, the ivar contract tolerates a plugin adding a filter on read (redmineup_tags). No
+  assertion changed.
+- **E2E `core-pages.mjs`** (Jan's general decision): Project > Settings, issue list, issue page.
+- CHANGELOG "Unreleased" and README ("A field hidden from you stays hidden", "none" on the status
+  filters) updated; COMPATIBILITY.md describes the `buildFilterRow` wrap. Version left at 1.1.0.
 
 ## Inventory of functions
 
@@ -73,6 +87,8 @@ scenario in `docs/e2e/<scenario>.md`):
 | Journal for subtasks moved with their parent | issue edit form (move) | `subtask-move-journal.mjs` | child history by manager, parent history, one mail for the parent and none for the child, setting off = no journal, reporter has no project field |
 | REST API `/issues.json` with the filters | API (Basic auth) | `rest-api.mjs` | 15 calls: both parameter styles, reporter visibility, outsider 403, invalid date 422, depth 99 and `1 OR 1=1` match nothing |
 | Redmine 7 webhooks | webhook to a local listener | `webhooks.mjs` | one `issue.updated` per moved issue, subtask payload with its new project, no duplicate |
+| "none" on six status filters (decision 3) | issue list, Add filter, saved query | `status-none.mjs` | offered to admin, manager, reporter, outsider on the six, not on Status, Root: Status, Tree: Status; applied through the form as manager and reporter (private subtask respected); Parent task none, Tree / Subtasks none; saved query reopens with none; private project 403 |
+| Core pages with the plugin (and with all GEOxyz plugins) | Project > Settings, issue list, issue page | `core-pages.mjs` | admin and manager 200; reporter Settings 403; outsider private Settings 403; combination results in `docs/e2e/geoxyz-all/` |
 | Core pages and flows with the plugin | | `.codex/e2e/smoke.mjs`, `core.mjs` | 11 + 6 screenshots |
 
 ## Work list for the migration session
@@ -102,6 +118,33 @@ scenario in `docs/e2e/<scenario>.md`):
 5. Every feature by hand on Redmine 7 with screenshots. **Done**: inventory above.
 
 ## Results
+
+**2026-10-07, after Jan's decisions (PostgreSQL 16 only, as decided):**
+
+| Run | Plugins | rspec | e2e scripts / screenshots / problems |
+|---|---|---|---|
+| 7.0-stable-GEOxyz | alone | 756 examples, 0 failures, 2 pending (MySQL only) | 17 / 131 / 0 (`docs/e2e/`) |
+| 7.0-stable-GEOxyz | all 43 GEOxyz plugins, `redmine70-migration` heads, with the ifv test shim below | 756 examples, 0 failures, 2 pending | 17 / 136 / 5, none from this plugin (`docs/e2e/geoxyz-all/`) |
+
+RuboCop 1.88.2: no offenses. Every screenshot of the new and changed scenarios (status-none,
+core-pages, both runs) was opened; the others were checked against their captions on 2026-10-06.
+
+Combination findings, none in this plugin (it uses `prepend` only):
+- **redmine_issue_field_visibility + redmine_agile**: ifv alias-chains
+  `IssueQuery#initialize_available_filters` (and `available_columns`, `Issue#reload`), agile prepends
+  it; together `SystemStackError`, so the full set does not even load its default data. Jan's rule
+  (prepend, never alias_method) applies to ifv. For these runs ifv was switched to `prepend` in the
+  test checkout only (not pushed anywhere); with that, everything above is green.
+- **Project > Settings answers 500** with the full set: `super: no superclass method
+  project_settings_tabs`, through redmine_mail_digest (`project_settings_tabs_with_issue_digest`, an
+  alias chain) and redmine_wiki_extensions. The case Jan named; for those plugins.
+- **redmine_view_issue_description** refuses issue pages and the edit form to the core Reporter role
+  (403, `vid_authorize_issue_detail`): by design of that plugin, the role lacks its permission.
+- **redmine_contacts_helpdesk**: with its Journal patch, a second change saved through the same Issue
+  object on the same journal is not recorded (core records it). Not reachable from a single request;
+  a script or plugin that saves an issue twice would lose the second change. For that plugin.
+
+**2026-10-06 (history):**
 
 **rspec** (`./.codex/test_plugin.sh`):
 
@@ -203,9 +246,13 @@ Own plugin: all of it is GEOxyz code, so there is nothing to re-apply.
 Actions the person doing the upgrade must take, or know about, for this plugin:
 
 - None required: no migration, no setting, no data fix. Replace the folder and restart.
-- Keep the plugin directory named `redmine_parent_child_filters`, and do not install a plugin that
-  alias-chains `IssueQuery#initialize_available_filters` under a name that sorts after it (see work list
-  item 2).
+- Keep the plugin directory named `redmine_parent_child_filters`. Decision 2 (Jan, 2026-10-07): for
+  every new plugin, check that it does not alias-chain `IssueQuery#initialize_available_filters`
+  (Jan's rule: prepend only). redmine_issue_field_visibility does so today and must be on `prepend`
+  before it goes live next to redmine_agile (see "Results").
+- Decision 3: users see "none" in the operator list of six status filters (new option, documented in
+  the README). The browser loads one small script, `plugin_assets/redmine_parent_child_filters/pcf_filters.js`;
+  nothing to configure.
 - If redmine_issue_field_visibility hides the assignee or the description from a role, users with that
   role will no longer find issues through those fields in the people filters (intended, see question 1).
 - Subtasks moved before the plugin journaled such moves still have no history entry; nothing to do.
