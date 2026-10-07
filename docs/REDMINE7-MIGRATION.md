@@ -129,6 +129,12 @@ scenario in `docs/e2e/<scenario>.md`):
 RuboCop 1.88.2: no offenses. Every screenshot of the new and changed scenarios (status-none,
 core-pages, both runs) was opened; the others were checked against their captions on 2026-10-06.
 
+Review of the 2026-10-07 commits: own adversarial pass (the JS wrap is synchronous and restores the
+filter type and operator list in `finally`; `!*` already had its SQL; the API and saved queries are
+unaffected by the type), then OpenAI `docs/reviews/openai-2026-10-07-0ea88f9.md` (gpt-5, range
+89eca3f..0ea88f9): no findings. Not exercised: query pages of other plugins that reuse Redmine's filter
+form (e.g. the Agile board) with the new type; the script wraps the same global function there.
+
 Combination findings, none in this plugin (it uses `prepend` only):
 - **redmine_issue_field_visibility + redmine_agile**: ifv alias-chains
   `IssueQuery#initialize_available_filters` (and `available_columns`, `Issue#reload`), agile prepends
