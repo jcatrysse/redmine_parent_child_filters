@@ -159,24 +159,40 @@ before they reach the SQL, covered by `spec/security_spec.rb`.
   in the dropdown, and the tracker filters (`:list`) neither "any" nor "none". Documentation only;
   see open question 4.
 
+## Decided by Jan
+
+Answered by Jan on 2026-10-07 in the coordinating session (recorded verbatim in
+`docs/DECISIONS-2026-10-07.md`). Final.
+
+**General, for every GEOxyz plugin (2026-10-07)**
+- Straight to Redmine 7, no backports to 5.1; `redmine70-migration` is what goes live. Redmine 5.1
+  compatibility is no longer a requirement (rules below updated).
+- PostgreSQL 16 only: tests and e2e on PostgreSQL; MariaDB runs no longer required, a MariaDB-only
+  problem is a note, not a blocker. The MariaDB results above stay as history.
+- deface without a version constraint: n/a, this plugin does not use deface.
+- A core method other plugins also patch is patched with `prepend`, never `alias_method`: this plugin
+  already uses `prepend` everywhere (no `alias_method` in `lib/` or `init.rb`); checked with the other
+  GEOxyz plugins installed, see "Results".
+- GitHub Actions stay manual only: unchanged, all workflows are `workflow_dispatch`.
+
+**This plugin**
+1. *Hoe gaan de personenfilters om met velden die voor een rol verborgen zijn?* (2026-10-07)
+   Jan chose A: "Algemene aanpak, zoals gebouwd" (Werkt met elke plugin die velden verbergt, zonder
+   vaste koppeling; wie de velden niet mag zien, vindt er ook via deze filters niets meer mee.).
+   Already built in `a18f3c6`; kept.
+2. *Laten we de beperking in laadvolgorde van plugins zo, of passen we de techniek van de plugin aan?*
+   (2026-10-07) Jan chose A: "Zo laten en nieuwe plugins hierop controleren" (Geen wijziging nu; bij
+   elke nieuwe plugin moet iemand dit nakijken.). No code change; the check is listed under
+   "After the upgrade".
+3. *Hoe maken we 'geen' bij de statusfilter voor subtaken bruikbaar?* (2026-10-07) Jan chose B:
+   "De keuze 'none' aan de keuzelijst toevoegen" (Gebruikers kunnen het zelf kiezen, maar het is een
+   nieuwe optie op het scherm en dus een gedragswijziging.). Built, see "Already on this branch".
+
 ## Open questions for Jan
 
-1. **Hidden fields and the people filters** (security, behaviour change for some users). Options:
-   (a) as built: the people filters use the assignee/description only when the query offers Redmine's own
-   filter on them, generic, no dependency on redmine_issue_field_visibility; (b) name that plugin and
-   ask it per issue project; (c) leave as it was (a role with the assignee hidden can still find it).
-   Recommendation: (a). Users who can see the fields notice nothing; users from whom they are hidden
-   lose exactly what they should not have had.
-2. **Version number**: the two fixes sit under "Unreleased" in the CHANGELOG, `init.rb` still says 1.1.0.
-   Recommendation: release as 1.1.1 when this branch is merged.
-3. **Load order constraint**: a future plugin that alias-chains `IssueQuery#initialize_available_filters`
-   and sorts after `redmine_parent_child_filters` would crash the issue list (`SystemStackError`).
-   Options: keep as is and check new plugins (recommended, nothing in the GEOxyz set does it), or move
-   this plugin to `alias_method` chains (then a later `prepend` elsewhere is fine, an earlier one is not).
-
-4. **"none" on the status filters**: reachable only through the URL, the API or a saved query (see
-   "Found elsewhere"). Options: say so in the README (recommended, no behaviour change), or add the
-   `!*` operator to the plugin's status filters (a new operator in the UI, a behaviour change).
+1. **Version number** (not part of the 2026-10-07 answers): the fixes sit under "Unreleased" in the
+   CHANGELOG, `init.rb` still says 1.1.0. Recommendation: release as 1.1.1 (or 1.2.0, since decision 3
+   adds an operator) when this branch goes live.
 
 ## GEOxyz changes to review or re-apply
 
@@ -251,9 +267,9 @@ results quoted in the analysis come from it.
 4. **GEOxyz changes**: go through the table above, one item at a time. Each kept or re-made change
    is its own commit with a test that proves it. Record the verdict in the table.
 5. **Work list**: then the numbered list, in order. One concern per commit.
-6. **Portability**: everything must run on Redmine's supported databases (PostgreSQL,
-   MySQL/MariaDB; SQLite where the plugin already supports it). Migrations must be reversible and
-   are run down and up on PostgreSQL and MariaDB.
+6. **Portability**: GEOxyz runs PostgreSQL 16 only (Jan, 2026-10-07): tests, migrations (down and
+   up) and the e2e set run on PostgreSQL. Keep SQL portable where that costs nothing; a
+   MariaDB-only problem is a note in this file, not a blocker.
 7. **Together**: run with the other GEOxyz plugins installed (the migration kit's harness, or
    `RMP_EXTRA_PLUGINS`). A failure that only appears in combination is a finding to record here.
 8. **End to end, visually, every function**: on the real Redmine from `start_server.sh`
@@ -272,7 +288,7 @@ results quoted in the analysis come from it.
      reads them; API through `t.page.request`) and record command and result.
    - Before pictures where behaviour or layout changes: the branch GEOxyz runs today, on
      Redmine 5.1, same scenarios, `RMP_E2E_OUT=docs/e2e/before`.
-   - Run the whole e2e set once on MariaDB as well (`RMP_DB=mariadb`, then `start_server.sh --reset`).
+   - MariaDB runs are no longer required (Jan, 2026-10-07).
 9. **Independent review**: first your own, adversarial: re-read the whole diff as if someone
    else wrote it and you are paid to reject it. Then, **when `OPENAI_API_KEY` is set in the
    session**, `./.codex/openai_review.sh`: it sends the diff of this branch to an OpenAI model
@@ -317,8 +333,9 @@ results quoted in the analysis come from it.
   (on by default: `t.sudo()` in a scenario). The breaker list is in the migration kit's CHECKLIST.md.
 - **Locales**: keep the locales the plugin ships in sync; translate a new key by matching the
   closest existing key in the same file, not from scratch; do not add new languages.
-- **5.1 compatibility**: prefer fixes that also run on Redmine 5.1 so they can be merged early;
-  say so when a fix cannot.
+- **No 5.1** (Jan, 2026-10-07): GEOxyz goes straight to Redmine 7; `redmine70-migration` is what
+  goes live. No backports, no cherry-picks to the default branch, no code paths only for 5.1.
+- **prepend, never alias_method** (Jan, 2026-10-07) on a core method other plugins also patch.
 - **Git**: work on `redmine70-migration` only; never push to the default branch; never force-push
   a branch someone else uses. Descriptive commit messages (what and why). Push after every
   commit, together with the updated status in this file: a cloud session can stop at a usage
@@ -329,8 +346,8 @@ results quoted in the analysis come from it.
 ## Definition of done
 
 - All items of the work list are done or explicitly deferred with a reason, in this file.
-- The plugin's tests are green on Redmine 7.0-stable-GEOxyz with PostgreSQL and MariaDB
-  (numbers in this file); boot, production-like eager load, migrations up/down OK.
+- The plugin's tests are green on Redmine 7.0-stable-GEOxyz with PostgreSQL, alone and with the
+  other GEOxyz plugins (numbers in this file); boot, production-like eager load, migrations up/down OK.
 - Every function in the inventory exercised end to end on a real running Redmine, with and
   without permissions and on its failure paths; `./.codex/e2e.sh` green; screenshots looked at,
   committed in `docs/e2e/` and listed.
