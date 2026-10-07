@@ -374,13 +374,17 @@ RSpec.describe IssueQuery do
     let!(:child)  { create_issue(project: project, tracker: tracker_b, status: status_open, parent: parent) }
 
     before do
-      # Move the child through a second status and back, leaving a journal.
-      child.init_journal(User.current)
-      child.status = status_other
-      child.save!
-      child.reload.init_journal(User.current)
-      child.status = status_open
-      child.save!
+      # Move the child through a second status and back, leaving a journal for
+      # each change. A fresh object per change, as two requests would: Issue#reload
+      # keeps the journal of the first save, and whether a second change on that
+      # same journal is recorded depends on the plugins installed (with the full
+      # GEOxyz set it is not), which is not what these examples are about.
+      [status_other, status_open].each do |status|
+        issue = Issue.find(child.id)
+        issue.init_journal(User.current)
+        issue.status = status
+        issue.save!
+      end
     end
 
     it 'matches a child whose status has been the given one' do

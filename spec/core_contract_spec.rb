@@ -234,7 +234,13 @@ RSpec.describe 'what the plugin assumes about Redmine' do
       query.available_filters # force initialisation
 
       query.instance_variable_set(:@available_filters, {'only_this' => nil})
-      expect(query.available_filters.keys).to eq(['only_this'])
+      # Read, not rebuilt: what was put there is there, and nothing core would
+      # register comes back. A plugin may add its own filter on every read
+      # (redmineup_tags adds issue_tags in available_filters), so the assertion
+      # is about the ivar being the source, not about the exact key list.
+      keys = query.available_filters.keys
+      expect(keys.first).to eq('only_this')
+      expect(keys).not_to include('status_id', 'tracker_id', 'root_id')
     end
 
     it 'is restored even when core raises' do
