@@ -3,9 +3,6 @@ name: Lint
 # Cheap checks that need no database and no Redmine checkout, so they finish
 # long before the spec matrix does.
 on:
-  push:
-    branches: ['**']
-  pull_request:
   workflow_dispatch:
 
 concurrency:

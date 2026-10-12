@@ -11,8 +11,6 @@ name: Weekly
 # a scheduled workflow fails, which is the notification; a `continue-on-error`
 # trunk job would have kept the run green and told nobody.
 on:
-  schedule:
-    - cron: '17 4 * * 1'
   workflow_dispatch:
 
 concurrency:
