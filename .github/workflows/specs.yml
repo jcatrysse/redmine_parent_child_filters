@@ -47,6 +47,7 @@ jobs:
       PCF_DB_PASSWORD: redmine
       # The runner has its own Ruby; never let the scripts reach for another one.
       PCF_RUBY: ${{ inputs.ruby }}
+      REDMINE_BRANCH: ${{ inputs.redmine }}
 
     steps:
       # Actions are pinned to a commit SHA rather than a tag: a tag can be moved to
@@ -68,7 +69,7 @@ jobs:
           sudo apt-get install -y build-essential libpq-dev default-libmysqlclient-dev rsync
 
       - name: Check out Redmine ${{ inputs.redmine }} and install the plugin
-        run: ./.codex/redmine_clone.sh ${{ inputs.redmine }}
+        run: ./.codex/redmine_clone.sh "$REDMINE_BRANCH"
 
       - name: Set up Ruby ${{ inputs.ruby }}
         uses: ruby/setup-ruby@95ef2b042f9d7a56d8268cba8559e2842e2ad01b # v1.321.0
