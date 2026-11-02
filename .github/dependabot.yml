@@ -16,5 +16,3 @@ updates:
     open-pull-requests-limit: 3
     commit-message:
       prefix: ci
-    labels:
-      - dependencies

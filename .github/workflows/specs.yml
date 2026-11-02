@@ -72,7 +72,7 @@ jobs:
         run: ./.codex/redmine_clone.sh "$REDMINE_BRANCH"
 
       - name: Set up Ruby ${{ inputs.ruby }}
-        uses: ruby/setup-ruby@95ef2b042f9d7a56d8268cba8559e2842e2ad01b # v1.321.0
+        uses: ruby/setup-ruby@7f797815d8adceb1c412e7abefdd1ab4abc47a5f # v1.335.0
         with:
           ruby-version: ${{ inputs.ruby }}
           # test_setup.sh owns `bundle install` so that CI and a laptop install
@@ -95,12 +95,12 @@ jobs:
       - name: Run the specs
         run: ./.codex/test_plugin.sh
 
-      # upload-artifact jumps to v6 while the others stay on v5: v5 of this one
-      # still targets Node 20, so it would not have stopped the deprecation
-      # warning. All three inputs used here are unchanged in v6.
+      # upload-artifact is ahead of checkout and cache (v5): its v5 still targeted
+      # Node 20. All three inputs used here are unchanged through v7, and v7's new
+      # `archive` input defaults to true, so the report is still zipped under `name`.
       - name: Publish the test report
         if: always()
-        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: rspec-${{ inputs.redmine }}-${{ matrix.db }}
           path: redmine/tmp/test-results/*.xml
