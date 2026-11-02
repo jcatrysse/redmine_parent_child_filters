@@ -19,6 +19,7 @@
 # (npm install -g playwright && npx playwright install --with-deps chromium).
 set -euo pipefail
 
+# shellcheck source-path=SCRIPTDIR
 # shellcheck source=e2e/env.sh
 . "$(dirname "${BASH_SOURCE[0]}")/e2e/env.sh"
 rmp_require_checkout

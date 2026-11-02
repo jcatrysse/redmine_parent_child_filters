@@ -23,6 +23,7 @@
 # users and projects that one creates.
 set -euo pipefail
 
+# shellcheck source-path=SCRIPTDIR
 # shellcheck source=e2e/env.sh
 . "$(dirname "${BASH_SOURCE[0]}")/e2e/env.sh"
 
