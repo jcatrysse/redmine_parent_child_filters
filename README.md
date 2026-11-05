@@ -27,7 +27,7 @@ off a compatibility list:
 | 5.1-stable | 6.1 | 3.2 | 16 | 8.4 | 11 |
 | 6.0-stable | 7.2 | 3.3 | 16 | 8.4 | 11 |
 | 6.1-stable | 7.2 | 3.4 | 16 | 8.4 | 11 |
-| 7.0-stable | 8.1 | 3.4 | 16 | 8.4 | 11 |
+| 7.0-stable | 8.1 | 4.0 | 16 | 8.4 | 11 |
 
 A weekly run repeats the whole table plus Redmine trunk (`master`). The per-push
 workflows test each branch as it stood when the plugin last changed, but

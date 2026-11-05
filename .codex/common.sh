@@ -6,11 +6,11 @@
 #   REDMINE_DIR     checkout to work in (default: redmine)
 #   MISE_BIN        mise executable, used only when it is present
 #   PCF_RUBY        pin the Ruby version instead of deriving it from the Gemfile
-#   PCF_RUBY_MAX    newest Ruby that actually exists (default: 3.4)
+#   PCF_RUBY_MAX    newest Ruby that actually exists (default: 4.0)
 
 REDMINE_DIR="${REDMINE_DIR:-redmine}"
 MISE_BIN="${MISE_BIN:-mise}"
-PCF_RUBY_MAX="${PCF_RUBY_MAX:-3.4}"
+PCF_RUBY_MAX="${PCF_RUBY_MAX:-4.0}"
 
 PLUGIN_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 # Used by the scripts that source this file, not here.
@@ -24,7 +24,7 @@ pcf_version_le() {
 
 # Redmine pins a range rather than a version, so derive one just below the upper
 # bound: "< 3.5.0" means 3.4 is the newest Ruby the checkout accepts. Redmine 7
-# allows "< 4.1.0", which would derive a Ruby 4.0 that does not exist yet, so the
+# allows "< 4.1.0", which derives Ruby 4.0, the newest Ruby it runs on. The
 # result is clamped to PCF_RUBY_MAX and floored at the lower bound.
 pcf_detect_ruby_version() {
   local gemfile="$REDMINE_DIR/Gemfile" line lower upper major minor candidate

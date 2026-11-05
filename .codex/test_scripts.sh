@@ -123,7 +123,7 @@ expect_version() {
 
 expect_version 'Redmine 5.x range'  "'>= 2.7.0', '< 3.3.0'" 3.2
 expect_version 'Redmine 6.x range'  "'>= 3.1.0', '< 3.5.0'" 3.4
-expect_version 'unreleased upper'   "'>= 3.2.0', '< 4.1.0'" 3.4
+expect_version 'unreleased upper'   "'>= 3.2.0', '< 4.1.0'" 4.0
 expect_version 'lower bound wins'   "'>= 3.4.0', '< 3.5.0'" 3.4
 
 echo

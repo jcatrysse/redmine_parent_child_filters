@@ -24,4 +24,4 @@ jobs:
     uses: ./.github/workflows/specs.yml
     with:
       redmine: 7.0-stable
-      ruby: '3.4'
+      ruby: '4.0'
